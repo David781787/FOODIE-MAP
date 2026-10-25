@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Foodie Map – Khám phá món ngon Sài Gòn</title>
+<meta name="description" content="Foodie Map: bản đồ quán ăn ngon TP.HCM theo khu vực, có Google Maps, chỉ đường, tìm món chính xác.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🍜%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F4ED;--fg:#252722;--green:#203D32;--gold:#B69A63;--line:#E7E3DA;--card:#fff;--on-green:#F7F4ED;--muted:#5E6159;--brand:#203D32;--gold-text:#7A6232;--ok:#1E7A4A;--bad:#B3261E;--link:#1a73e8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#181a17;--fg:#ECE8DF;--green:#2d5645;--line:#33362f;--card:#22251f;--muted:#B4B0A5;--brand:#8FC9AE;--gold-text:#D4B97F;--ok:#5FD08D;--bad:#F0827D;--link:#8AB4F8}}
+:root[data-theme="dark"]{--bg:#181a17;--fg:#ECE8DF;--green:#2d5645;--line:#33362f;--card:#22251f;--muted:#B4B0A5;--brand:#8FC9AE;--gold-text:#D4B97F;--ok:#5FD08D;--bad:#F0827D;--link:#8AB4F8}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 Inter,system-ui,sans-serif}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;font-weight:700;line-height:1.15;margin:0}
+a{color:inherit}:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+header{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:14px 5vw;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font:700 24px 'Playfair Display',Georgia,serif;color:var(--brand)}
+nav{display:flex;gap:18px;font-size:15px}nav a{text-decoration:none}nav a:hover{text-decoration:underline;text-decoration-color:var(--gold)}
+button,select,input{font:inherit;color:inherit}
+.btn{background:var(--green);color:var(--on-green);border:0;border-radius:6px;padding:11px 20px;min-height:44px;cursor:pointer}
+.btn.ghost{background:none;color:var(--fg);border:1px solid var(--fg)}
+.lang button{min-height:36px;padding:4px 10px;border:1px solid var(--line);background:none;cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--green);color:var(--on-green)}
+.hero{padding:9vh 5vw 6vh;max-width:980px}
+.hero h1{font-size:clamp(34px,6vw,64px);color:var(--brand)}
+.hero p{max-width:60ch;font-size:18px}
+.tag{margin:14px 0 0;font-style:italic;color:var(--gold-text)}
+section{padding:36px 5vw;max-width:1280px;margin:auto}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:18px 0}
+.bar label{display:flex;flex-direction:column;font-size:13px;gap:4px}
+.bar input,.bar select{min-height:44px;padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:6px}
+.bar .grow{flex:1 1 240px}
+.notice{background:var(--card);border-left:4px solid var(--gold);padding:12px 16px;font-size:14px;margin:12px 0;color:var(--fg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:8px;color:var(--fg)}
+.card h3{font-size:20px}.meta{font-size:14px;color:var(--muted)}
+.rate{font-weight:600}.badge{font-size:12px;border:1px solid var(--gold);border-radius:99px;padding:2px 10px;align-self:flex-start}
+.row{display:flex;gap:8px;margin-top:auto;padding-top:8px;flex-wrap:wrap}
+.row a,.row button{font-size:14px;min-height:40px;padding:8px 12px;border:1px solid var(--line);background:none;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.row button[aria-pressed=true]{background:var(--green);color:var(--on-green)}
+.ai{background:var(--green);color:var(--on-green);border-radius:10px;padding:28px}
+.ai h2{margin-bottom:8px}.ai .bar input{color:var(--fg);width:100%}
+.ai .notice{color:var(--fg)}
+::placeholder{color:var(--muted);opacity:1}
+.empty{padding:40px;text-align:center;border:1px dashed var(--line);border-radius:8px}
+#about h3{font-size:20px;margin:22px 0 6px}#about p{max-width:75ch}.credits{padding-left:20px;line-height:1.9}footer{padding:32px 5vw;border-top:1px solid var(--line);font-size:14px}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .2s}.card:hover{border-color:var(--gold)}}
+#map{position:absolute;inset:0;height:100%;width:100%;z-index:0}
+.mapwrap{display:grid;grid-template-columns:320px 1fr;height:560px;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:12px 0;background:var(--card)}
+.mlist{overflow:auto;border-right:1px solid var(--line)}
+.mi{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 14px;cursor:pointer}
+.mi b{display:block}.mi:hover,.mi.on{background:var(--bg)}.mi.on{box-shadow:inset 3px 0 0 #EA4335}
+.mapbox{position:relative;isolation:isolate;min-height:280px;background:var(--bg)}
+.gmapwrap{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;background:var(--card)}
+.mapbox.pins-mode .gmapwrap{display:none}
+.gmapbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--card);font-size:13px;flex-wrap:wrap}
+.gmapbar-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.gmapbar-info b{font-size:14px;color:var(--brand)}
+.gmapbar-actions{display:flex;gap:6px;flex-wrap:wrap}
+.gmapbar-actions button,.gmapbar-actions a{font-size:12px;min-height:32px;padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.gmapbar-actions button[aria-pressed=true]{background:var(--green);color:var(--on-green);border-color:var(--green)}
+.gmap{flex:1;width:100%;height:100%;border:0;display:block}
+.mctl{position:absolute;left:10px;bottom:22px;z-index:1000;display:flex;gap:8px;flex-wrap:wrap}
+.mctl button,.mloc{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.28);min-height:40px;padding:6px 12px;cursor:pointer;font-weight:500}
+.mctl button[aria-pressed=true]{background:var(--green);color:var(--on-green);border-color:var(--green)}
+.mloc{position:absolute;right:10px;bottom:98px;z-index:1000;width:40px;padding:0;font-size:18px}
+.cmap{margin-top:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.cmap iframe{width:100%;height:230px;border:0;display:block}
+.dmap{margin:12px 0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.dmap iframe{width:100%;height:250px;border:0;display:block}
+.toast{position:fixed;bottom:20px;right:20px;z-index:2000;background:var(--green);color:var(--on-green);padding:12px 18px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.3);font-size:14px;max-width:340px}
+.toast:empty{display:none}
+.gpin{background:none;border:0}.gpin svg{filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.leaflet-container{font-family:Inter,system-ui,sans-serif}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--card);color:var(--fg)}
+.leaflet-popup-content{margin:12px 14px}.gp{min-width:200px;font-size:14px;line-height:1.45}.gp b{font-size:16px}
+.gpr{display:flex;gap:6px;margin-top:8px}.gpr a,.gpr button{flex:1;text-align:center;font:inherit;padding:6px 8px;border-radius:99px;border:1px solid var(--link);color:var(--link);background:none;text-decoration:none;cursor:pointer}
+.leaflet-container .gpr a{background:var(--link);color:var(--bg)}
+:root[data-theme=dark]{color-scheme:dark}
+@media (max-width:760px){.mapwrap{grid-template-columns:1fr;grid-template-rows:190px 1fr;height:680px}.mlist{border-right:0;border-bottom:1px solid var(--line)}}
+.pin{font-size:24px;line-height:28px;text-align:center;background:none;border:0}
+.st.on{color:var(--ok);font-weight:600}.st.off{color:var(--bad);font-weight:600}
+.bar label.chk{flex-direction:row;align-items:center;min-height:44px;gap:8px}.chk input{min-height:0;width:20px;height:20px;padding:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.chip{background:none;border:1px solid currentColor;color:inherit;border-radius:99px;padding:6px 14px;min-height:40px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--gold);color:#252722;border-color:var(--gold)}
+.card[data-d]{cursor:pointer}
+.sk i{display:block;height:14px;border-radius:4px;background:var(--line);margin:6px 0}.sk i:first-child{height:22px;width:70%}
+@media (prefers-reduced-motion:no-preference){.sk i{background:linear-gradient(90deg,var(--line),var(--bg),var(--line));background-size:200% 100%;animation:sh 1.1s infinite linear}@keyframes sh{to{background-position:-200% 0}}}
+dialog{max-width:560px;width:92vw;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);padding:22px}
+dialog::backdrop{background:rgba(0,0,0,.5)}dialog h3{margin:14px 0 4px}
+.dhero{font-size:56px;background:var(--bg);border-radius:8px;text-align:center;padding:12px;margin-bottom:12px}
+details summary{cursor:pointer;font:700 20px 'Playfair Display',Georgia,serif}:root[data-theme=dark] #map.inv .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}
+
+.desc{font-size:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.why{color:var(--gold-text);font-weight:500}
+.interp{margin:6px 0;font-size:14px}.ichip{display:inline-block;background:var(--card);color:var(--fg);border:1px solid var(--gold);border-radius:99px;padding:1px 10px;margin:2px 2px 2px 0;font-size:13px}
+.ai .ichip{background:transparent;color:var(--on-green)}
+#notice-miss:empty{display:none}#notice-miss{color:var(--bad);font-weight:600}
+.locbar{display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--gold);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:14px}
+.locbar.on{display:flex}
+.locbar-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.locbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.locbar select,.locbar button{min-height:36px;padding:5px 10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;font-size:13px;cursor:pointer}
+.locbar button.pri{background:var(--green);color:var(--on-green);border-color:var(--green)}
+.locbar button[aria-pressed=true]{background:var(--gold);color:#252722;border-color:var(--gold);font-weight:600}
+.near-badge{display:inline-block;background:var(--gold);color:#252722;font-weight:600;font-size:12px;padding:1px 8px;border-radius:99px;margin-left:6px}
+.btn.ghost[aria-pressed=true]{background:var(--green);color:var(--on-green);border-color:var(--green)}
+
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+</head>
+<body>
+<header>
+<span class="logo">Foodie Map</span>
+<nav aria-label="main"><a href="#kham-pha" data-t="nav1"></a><a href="#ai" data-t="nav2"></a><a href="#meal" data-t="nav5"></a><a href="#mapsec" data-t="nav4"></a><a href="#about" data-t="nav6"></a></nav>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><div class="lang" role="group" aria-label="Theme"><button data-th="light" aria-pressed="false" data-t="thL"></button><button data-th="dark" aria-pressed="false" data-t="thD"></button></div><div class="lang" role="group" aria-label="Language"><button data-l="vi" aria-pressed="true">VI</button><button data-l="en" aria-pressed="false">EN</button></div></div>
+</header>
+<main>
+<div class="hero">
+<h1 data-t="h1"></h1><p data-t="sub"></p><p class="tag" data-t="tag"></p>
+<p><a class="btn" href="#kham-pha" style="text-decoration:none;display:inline-block" data-t="cta1"></a> <a class="btn ghost" href="#ai" style="text-decoration:none;display:inline-block" data-t="cta2"></a></p>
+</div>
+
+<section id="ai"><div class="ai">
+<h2 data-t="aiT"></h2><p data-t="aiD"></p>
+<div class="bar"><label class="grow"><span data-t="aiL"></span><input id="aiq" type="text" autocomplete="off"></label><button class="btn" style="background:var(--gold);color:#252722" id="aigo" data-t="aiB"></button></div>
+<div id="ctx"></div><p><button class="btn" style="background:var(--gold);color:#252722" id="roll" data-t="roll"></button></p><div id="aiout" aria-live="polite"></div>
+</div></section>
+
+<section id="meal"><h2 data-t="mealT"></h2><p data-t="mealD"></p><div class="chips" id="mtabs"></div><div class="grid" id="mgrid"></div><p><button class="btn ghost" id="mmore" data-t="more"></button></p></section>
+
+<section id="kham-pha">
+<h2 data-t="listT"></h2>
+<div class="notice" id="src"></div>
+<div class="bar">
+<label class="grow"><span data-t="fq"></span><input id="q" type="search" autocomplete="off"></label>
+<label><span data-t="fd"></span><select id="d"></select></label>
+<label><span data-t="fp"></span><select id="p"></select></label>
+<label><span data-t="fs"></span><select id="s"></select></label>
+<label class="chk"><input id="o" type="checkbox"><span data-t="fo"></span></label>
+<button class="btn ghost" id="near" data-t="near"></button>
+<button class="btn ghost" id="clr" data-t="clr"></button>
+</div>
+<div class="locbar" id="locbar" role="region" aria-label="Location">
+<div class="locbar-info"><span id="loc-status"></span></div>
+<div class="locbar-actions">
+<button type="button" id="loc-gps" class="pri"></button>
+<select id="loc-preset" aria-label="Chọn vị trí mốc"></select>
+<button type="button" id="loc-pick" aria-pressed="false"></button>
+<button type="button" id="loc-off"></button>
+</div>
+</div>
+<p class="interp" id="interp" aria-live="polite"></p><p id="notice-miss"></p>
+<div class="notice" data-t="mapNote"></div>
+<div class="mapwrap" id="mapsec">
+<div class="mlist" id="mlist"></div>
+<div class="mapbox" id="mapbox">
+<div class="gmapwrap" id="gmapwrap">
+<div class="gmapbar" id="gmapbar"></div>
+<iframe id="gmap" class="gmap" title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+</div>
+<div id="map" role="region" aria-label="Map"></div>
+<div class="mctl"><button id="vmode" aria-pressed="true"></button><button id="lyr"></button></div>
+<button class="mloc" id="loc" aria-label="My location" title="My location">◎</button>
+</div>
+</div>
+<p id="count" aria-live="polite"></p>
+<div class="grid" id="grid"></div>
+<p><button class="btn ghost" id="more" data-t="more"></button></p>
+</section>
+<dialog id="dlg" aria-label="Detail"><div id="dbody"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<section id="about">
+<h2 data-t="abT"></h2>
+<p data-t="abD"></p>
+<h3 data-t="abAIt"></h3><p data-t="abAI"></p>
+<h3 data-t="abDt"></h3><p data-t="abDat"></p><p class="meta" data-t="abAddr"></p>
+<h3 data-t="abCt"></h3>
+<ul class="credits">
+<li><span data-t="cr1"></span> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></li>
+<li><span data-t="cr2"></span> <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri, Maxar, Earthstar Geographics</a></li>
+<li><span data-t="cr3"></span> <a href="https://www.google.com/maps" target="_blank" rel="noopener">Google Maps</a></li>
+<li><span data-t="cr4"></span> <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet 1.9.4 (BSD-2-Clause)</a></li>
+<li><span data-t="cr5"></span> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo (CC BY 4.0)</a></li>
+<li><span data-t="cr6"></span> <a href="https://fonts.google.com/" target="_blank" rel="noopener">Inter, Playfair Display – Google Fonts (SIL OFL)</a></li>
+</ul>
+<p class="meta" data-t="crNote"></p>
+</section>
+</main>
+<footer data-t="foot"></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+/* Cấu trúc dữ liệu: id, a=quận, n=tên quán, c=nhóm món, t=từ khóa món, d=mô tả (null nếu chưa có), ad=địa chỉ, p=[giá thấp,giá cao] (null nếu chưa có), h/hs=giờ mở cửa, x=ghi chú, k=link Google Maps (rỗng thì web tự tạo link tìm kiếm theo tên + địa chỉ) */
+const DATA=[{"id":0,"a":"Quận 1","n":"Phở Minh","c":"noodle","t":["phở"],"d":"Tiệm phở gia truyền ẩn mình trong hẻm nhỏ lâu đời tại Sài Gòn, giữ nguyên hương vị mộc mạc, nước dùng thanh trong.","ad":"63/6 Pasteur, Sài Gòn, Hồ Chí Minh","p":null,"h":"06:30 – 10:30 (các ngày trong tuần)","hs":"6:30-10:30","x":null,"k":"https://maps.app.goo.gl/wjvEjU5CVhz6q4VT6","pos":[10.7748,106.7003]},{"id":1,"a":"Quận 1","n":"Tiệm hủ tiếu Thanh Xuân","c":"noodle","t":["hủ tiếu","hủ tiếu Mỹ Tho"],"d":null,"ad":"62 Tôn Thất Thiệp, phường Bến Nghé, quận 1, TP.HCM","p":[30000,60000],"h":"06:30 – 14:00","hs":"6:30-14:00","x":"Thường đông khách lúc 12h00","k":"https://maps.app.goo.gl/MRgSDNnBeQjoPexf6","pos":[10.7736,106.7014]},{"id":2,"a":"Quận 1","n":"Bếp Nhà Lục Tỉnh","c":"restaurant","t":["đặc sản Nam Bộ","món Nam Bộ"],"d":"Quán ăn tái hiện trọn vẹn hương vị đặc sản truyền thống của vùng đất Nam Bộ.","ad":"37 Nam Kỳ Khởi Nghĩa, Bến Thành, Hồ Chí Minh","p":[200000,700000],"h":"10:00 – 22:00","hs":"10:00-22:00","x":null,"k":"https://maps.app.goo.gl/Q3t8vpBDYuULd36b7","pos":[10.7712,106.6997]},{"id":3,"a":"Quận 1","n":"Cơm Bắc Làng Cua Đồng","c":"rice","t":["cơm Bắc","cua đồng","mâm cơm"],"d":"Điểm đến quen thuộc cho những ai yêu thích mâm cơm đồng quê","ad":"Hẻm 18A Nguyễn Thị Minh Khai, Quận 1, Hồ Chí Minh","p":null,"h":"05:00 – 19:00","hs":"5:00-19:00","x":null,"k":"https://maps.app.goo.gl/yZ41FcJadLGGQSce8","pos":[10.7852,106.7016]},{"id":4,"a":"Quận 1","n":"Wrap & Roll mPlaza","c":"restaurant","t":["gỏi cuốn","phở~cuốn","bánh tráng cuốn thịt heo","món cuốn"],"d":"Chuỗi nhà hàng chuyên về các món cuốn truyền thống Việt Nam (gỏi cuốn, phở cuốn, bánh tráng cuốn thịt heo...).","ad":"39 Lê Duẩn, Bến Nghé, Sài Gòn, Hồ Chí Minh","p":null,"h":null,"hs":null,"x":null,"k":"https://maps.app.goo.gl/5fUEqaGApKyyksCE8","pos":[10.7818,106.7008]},{"id":5,"a":"Quận 3","n":"Chè Hiển Khánh","c":"sweet","t":["chè","chè thạch sen","chè đậu xanh"],"d":"Tiệm chè truyền thống lâu đời từ trước năm 1975, nổi tiếng với các món chè thạch sen, đậu xanh và bảng hiệu viết tay đặc trưng.","ad":"718 Nguyễn Đình Chiểu, Phường 1, Quận 3, Hồ Chí Minh","p":[12000,35000],"h":"09:00 – 00:30","hs":"9:00-0:30","x":null,"k":"","pos":[10.7686,106.6766]},{"id":6,"a":"Quận 3","n":"Bún Mọc Ròm Mập","c":"noodle","t":["bún mọc"],"d":"Quán bún mọc chuẩn vị Bắc với những viên mọc thơm lừng, nước lèo hầm xương ngọt thanh.","ad":"457 Võ Văn Tần, Bàn Cờ, Hồ Chí Minh","p":null,"h":"06:00 – 22:30","hs":"6:00-22:30","x":null,"k":"","pos":[10.7702,106.6836]},{"id":7,"a":"Quận 3","n":"Quán A7 Lẩu Gà Lá É Phú Yên","c":"hotgrill","t":["lẩu gà lá é","lẩu gà","lẩu"],"d":"Chuyên món lẩu gà lá é đặc sản xứ Nẫu với vị cay nồng của ớt hiểm và lá é thơm đặc trưng.","ad":"14/7 Đ. Kỳ Đồng, Nhiêu Lộc, Hồ Chí Minh","p":[100000,200000],"h":"11:30 – 22:00 (Thứ 2 – Thứ 7) và 12:00 – 22:00 (Chủ Nhật)","hs":"1-6@11:30-22:00|0@12:00-22:00","x":null,"k":"","pos":[10.7824,106.6806]},{"id":8,"a":"Quận 3","n":"Lẩu Cá Kèo Bà Huyện","c":"hotgrill","t":["lẩu cá kèo","lẩu cá kèo lá giang","lẩu","rau đắng"],"d":"Thương hiệu lẩu cá kèo lá giang chua thanh, ăn cùng rau đắng và các loại rau nhúng đặc trưng miền Tây Nam Bộ.","ad":"18 Bà Huyện Thanh Quan, Xuân Hòa, Hồ Chí Minh","p":[100000,200000],"h":"10:00 – 22:00","hs":"10:00-22:00","x":null,"k":"","pos":[10.7766,106.6881]},{"id":9,"a":"Quận 3","n":"Bún Riêu Cua Ốc Cô Thuỷ","c":"noodle","t":["bún riêu","bún riêu cua","ốc"],"d":"Quán bún riêu cua đồng đậm đà, gạch cua thật kết hợp ốc giòn sần sật chuẩn vị truyền thống.","ad":"287/66 Đường Nguyễn Đình Chiểu, Bàn Cờ, Hồ Chí Minh","p":null,"h":"10:30 – 21:00","hs":"10:30-21:00","x":null,"k":"","pos":[10.772,106.6848]},{"id":10,"a":"Quận 3","n":"Quán Ăn Toàn Trí","c":"restaurant","t":["món nhậu","món ăn gia đình"],"d":"Quán ăn phục vụ đa dạng các món ăn gia đình và món nhậu mang phong cách truyền thống Việt Nam.","ad":"39 Rạch Bùng Binh, Nhiêu Lộc, Hồ Chí Minh","p":[100000,500000],"h":"09:30 – 01:30","hs":"9:30-1:30","x":null,"k":"","pos":[10.7805,106.6789]},{"id":11,"a":"Quận 3","n":"Bánh Tráng Trộn Chú Viên","c":"snack","t":["bánh tráng trộn","ăn vặt"],"d":"Hàng bánh tráng trộn trứ danh gắn liền với món ăn vặt truyền thống lâu năm của giới trẻ Sài Gòn.","ad":"38 Nguyễn Thượng Hiền, Phường 5, Quận 3, Hồ Chí Minh","p":null,"h":"09:00 – 18:00 (Thứ 2 – Thứ 7)","hs":"1-6@9:00-18:00","x":null,"k":"","pos":[10.7695,106.6828]},{"id":12,"a":"Quận 5","n":"Phở Lệ","c":"noodle","t":["phở","phở bò"],"d":"Một trong những quán phở bò nổi tiếng lâu đời nhất tại khu vực Chợ Lớn với nước dùng đậm đà, béo ngậy đặc trưng.","ad":"413 - 415 Nguyễn Trãi, An Đông, Hồ Chí Minh","p":[100000,200000],"h":"06:00 – 00:00","hs":"6:00-24:00","x":null,"k":"","pos":[10.7554,106.6708]},{"id":13,"a":"Quận 5","n":"Bánh Canh Cua 14","c":"noodle","t":["bánh canh cua","bánh canh","chả cua"],"d":"Quán bánh canh cua sền sệt nổi tiếng với phần nước dùng đậm đà, chả cua và thịt cua tươi chất lượng.","ad":"221 Trần Bình Trọng, Phường 3, Quận 5, TP.HCM","p":null,"h":"06:30 – 22:00","hs":"6:30-22:00","x":null,"k":"","pos":[10.7588,106.6806]},{"id":14,"a":"Quận 5","n":"Chè Uyên Ương","c":"sweet","t":["chè"],"d":"Tiệm chè truyền thống phục vụ các món chè ngọt thanh, mát lành quen thuộc của người dân khu vực Chợ Lớn.","ad":"82 Tạ Uyên, Chợ Lớn, Hồ Chí Minh","p":[20000,25000],"h":"11:00 – 21:30","hs":"11:00-21:30","x":null,"k":"","pos":[10.7548,106.6542]},{"id":15,"a":"Quận 5","n":"Bún Đậu Mắm Tôm A Chảnh","c":"noodle","t":["bún đậu mắm tôm","bún đậu","đậu hũ","thịt luộc","chả cốm"],"d":"Thương hiệu bún đậu mắm tôm truyền thống miền Bắc quen thuộc với mẹt đậu hũ giòn, thịt luộc, chả cốm và mắm tôm đánh bông.","ad":"200 Đ. Cống Quỳnh, Bến Thành, Hồ Chí Minh","p":null,"h":"09:00 – 22:00","hs":"9:00-22:00","x":null,"k":"","pos":[10.7662,106.6885]},{"id":16,"a":"Quận 5","n":"Cơm Tấm Sà Bì Chưởng","c":"rice","t":["cơm tấm","sườn nướng","sườn nướng mật ong"],"d":"Quán cơm tấm sườn nướng mật ong thơm lừng được chế biến chỉn chu theo hương vị cơm tấm Sài Gòn truyền thống.","ad":"179 Trần Bình Trọng, Chợ Quán, Hồ Chí Minh","p":[100000,200000],"h":"07:00 – 21:00","hs":"7:00-21:00","x":null,"k":"","pos":[10.7575,106.6802]},{"id":17,"a":"Quận 4","n":"Quán Cơm Tấm Bãi Rác","c":"rice","t":["cơm tấm","sườn","bì","chả","lạp xưởng"],"d":"Quán cơm tấm nổi tiếng bậc nhất Sài Gòn với các món sườn, bì, chả, lạp xưởng đậm đà, óng ánh mỡ hành.","ad":"73 Lê Văn Linh, Xóm Chiếu, Hồ Chí Minh","p":[100000,200000],"h":"16:30 – 00:00","hs":"16:30-24:00","x":null,"k":"","pos":[10.7621,106.7062]},{"id":18,"a":"Quận 4","n":"Súp Cua Hằng","c":"snack","t":["súp cua"],"d":"Quán súp cua truyền thống nức tiếng Quận 4 với topping phong phú (óc heo, trứng bắc thảo, tôm, thanh cua).","ad":"C200/18 Xóm Chiếu, Khánh Hội, Hồ Chí Minh","p":null,"h":"16:00 – 21:00","hs":"16:00-21:00","x":null,"k":"","pos":[10.7572,106.7068]},{"id":19,"a":"Quận 4","n":"Chè Thi Thi","c":"sweet","t":["chè","chè đậu","chè thạch"],"d":"Tiệm chè truyền thống lâu năm phục vụ các món chè đậu, chè thạch mát lành quen thuộc của người Nam Bộ.","ad":"233 Tôn Đản, Khánh Hội, Hồ Chí Minh","p":null,"h":"14:30 – 23:30","hs":"14:30-23:30","x":null,"k":"","pos":[10.7568,106.7042]},{"id":20,"a":"Quận 4","n":"Bún Cua Ốc Tôn Đản","c":"noodle","t":["bún riêu","bún cua ốc","ốc","đậu hũ chiên"],"d":"Tô bún riêu đậm đà hương vị cua đồng nguyên chất kết hợp ốc giòn sần sật và đậu hũ chiên vàng.","ad":"51 Tôn Đản, Khánh Hội, Hồ Chí Minh","p":null,"h":"13:00 – 22:00","hs":"13:00-22:00","x":null,"k":"","pos":[10.7605,106.7051]},{"id":21,"a":"Quận 4","n":"Đậu homemade Nguyễn Trường Tộ","c":"restaurant","t":["đậu homemade"],"d":null,"ad":"42 Đ. Nguyễn Trường Tộ, Xóm Chiếu, Hồ Chí Minh","p":[100000,200000],"h":"10:00 – 21:00","hs":"10:00-21:00","x":null,"k":"","pos":[10.7628,106.7049]},{"id":22,"a":"Quận Tân Bình","n":"Bún thịt nướng Hoàng Văn","c":"noodle","t":["bún thịt nướng"],"d":null,"ad":"Số 137, Đường Chấn Hưng, Quận Tân Bình, TP.HCM","p":[8000,53000],"h":"07:30 – 20:30","hs":"7:30-20:30","x":null,"k":"","pos":[10.7832,106.6608]},{"id":23,"a":"Quận Tân Bình","n":"Thành ký Mì Gia","c":"noodle","t":["mì gia"],"d":null,"ad":"199 Đường Nguyễn Hồng Đào, Phường 14, Quận Tân Bình, TP.HCM","p":[30000,55000],"h":"06:30 – 11:30 và 16:00 – 21:00","hs":"6:30-11:30,16:00-21:00","x":null,"k":"","pos":[10.7938,106.6416]},{"id":24,"a":"Quận Tân Bình","n":"Cơm Niêu Thiên Lý – Hoàng Hoa Thám","c":"rice","t":["cơm niêu"],"d":null,"ad":"134C Hoàng Hoa Thám, P.12, Quận Tân Bình, TP.HCM","p":[15000,396000],"h":"10:00 – 15:00 và 16:00 – 21:00","hs":"10:00-15:00,16:00-21:00","x":null,"k":"","pos":[10.8018,106.6475]},{"id":95,"a":"Quận Tân Bình","n":"Cơm Niêu Thiên Lý – Âu Cơ","c":"rice","t":["cơm niêu"],"d":null,"ad":"786 Âu Cơ, P.14, Quận Tân Bình, TP.HCM","p":[15000,396000],"h":"10:00 – 15:00 và 16:00 – 21:00","hs":"10:00-15:00,16:00-21:00","x":null,"k":"","pos":[10.7905,106.6392]},{"id":25,"a":"Quận Tân Phú","n":"Bún mắm Cô Ba","c":"noodle","t":["bún mắm"],"d":null,"ad":"264 Hoà Bình, Hiệp Tân, Quận Tân Phú","p":[35000,55000],"h":"07:00 – 21:00 hàng ngày","hs":"7:00-21:00","x":null,"k":"","pos":[10.7698,106.6305]},{"id":26,"a":"Quận Tân Phú","n":"Gà Ta Quê Nhà","c":"restaurant","t":["gà ta","gà"],"d":null,"ad":"346 Tân Sơn Nhì, Tân Sơn Nhì, Quận Tân Phú, TP.HCM","p":[20000,50000],"h":"09:00 – 21:00 hàng ngày","hs":"9:00-21:00","x":null,"k":"","pos":[10.7962,106.6328]},{"id":27,"a":"Quận Tân Phú","n":"Cháo sá sùng khô","c":"rice","t":["cháo","cháo sá sùng","sá sùng"],"d":null,"ad":"104/22B Trịnh Đình Trọng, Tân Phú, Hồ Chí Minh, Việt Nam","p":[35000,80000],"h":"06:00 – 11:00 và 15:00 – 22:00 (thứ 2 – chủ nhật)","hs":"6:00-11:00,15:00-22:00","x":null,"k":"https://maps.app.goo.gl/sYHHHijHqdFshokp8","pos":[10.7762,106.6388]},{"id":28,"a":"Quận Tân Phú","n":"Món quảng Dì Bảy","c":"noodle","t":["món Quảng","mì Quảng"],"d":null,"ad":"20 Đường số 41, Phường Phú Thọ Hoà, Quận Tân Phú, Thành phố Hồ Chí Minh","p":[15000,115000],"h":"06:30 – 21:00","hs":"6:30-21:00","x":null,"k":"","pos":[10.7856,106.6254]},{"id":29,"a":"Quận Tân Phú","n":"Bánh bèo bà Năm Nữ","c":"snack","t":["bánh bèo"],"d":null,"ad":"118/84 Lê Trọng Tấn, P. Tây Thạnh, Quận Tân Phú, TP.HCM","p":[5000,13000],"h":"03:00 – 21:00 (thứ 2 – Chủ Nhật)","hs":"3:00-21:00","x":null,"k":"","pos":[10.8065,106.6218]},{"id":30,"a":"Quận Bình Tân","n":"Quán Ăn Long Ký","c":"restaurant","t":[],"d":null,"ad":"124 Đ. Số 1, Bình Trị Đông B, Bình Tân, Thành phố Hồ Chí Minh","p":[30000,50000],"h":"09:00 – 22:00","hs":"9:00-22:00","x":null,"k":"","pos":[10.7562,106.6118]},{"id":31,"a":"Quận Bình Tân","n":"Bún Bò Gốc Huế O Tú","c":"noodle","t":["bún bò Huế","bún bò"],"d":null,"ad":"143 Đ. Số 1, An Lạc A, Bình Tân, Thành phố Hồ Chí Minh","p":[20000,65000],"h":"06:00 – 21:00","hs":"6:00-21:00","x":null,"k":"","pos":[10.7538,106.6125]},{"id":32,"a":"Quận Bình Tân","n":"Cơm Niêu Thiên Lý – Bình Tân","c":"rice","t":["cơm niêu"],"d":null,"ad":"120 Đường số 7, Bình Trị Đông B, Bình Tân, Thành phố Hồ Chí Minh","p":[20000,200000],"h":"10:00 – 15:00 và 16:00 – 21:00","hs":"10:00-15:00,16:00-21:00","x":null,"k":"","pos":[10.7575,106.6095]},{"id":33,"a":"Quận Bình Tân","n":"Quán Sáu Bột Chiên","c":"snack","t":["bột chiên","ăn vặt"],"d":null,"ad":"426 Tên Lửa, Bình Trị Đông B, Bình Tân, Thành phố Hồ Chí Minh","p":[10000,55000],"h":"15:30 – 22:30","hs":"15:30-22:30","x":null,"k":"","pos":[10.7545,106.6102]},{"id":34,"a":"Quận Bình Tân","n":"Quán Ốc Sinh Viên 2","c":"seafood","t":["ốc"],"d":null,"ad":"147 Lê Văn Quới, Bình Trị Đông, Bình Tân, Thành phố Hồ Chí Minh","p":[30000,500000],"h":"10:00 – 02:00","hs":"10:00-2:00","x":null,"k":"","pos":[10.7742,106.6056]},{"id":35,"a":"Quận 2","n":"Bánh cuốn bà Năm","c":"noodle","t":["bánh cuốn"],"d":null,"ad":"93 Trần Não, Khu phố 2, Quận 2, TP. HCM","p":[20000,30000],"h":"06:00 – 23:00 (thứ 2 – Chủ Nhật)","hs":"6:00-23:00","x":null,"k":"","pos":[10.7924,106.7318]},{"id":36,"a":"Quận 2","n":"Bún bò & bò kho Hạnh","c":"noodle","t":["bún bò","bò kho"],"d":null,"ad":"06 đường số 34, P. Bình An, Quận 2, TP. HCM","p":[50000,65000],"h":"06:00 – 09:00 (thứ 2 – Chủ Nhật)","hs":"6:00-9:00","x":null,"k":"","pos":[10.7946,106.7335]},{"id":37,"a":"Quận 2","n":"Miến lươn xứ Nghệ Kim Liên","c":"noodle","t":["miến lươn","lươn"],"d":null,"ad":"38 Thái Thuận, Thảo Điền, Quận 2, TP. HCM","p":[55000,70000],"h":"06:00 – 14:00 và 17:00 – 21:00","hs":"6:00-14:00,17:00-21:00","x":null,"k":"","pos":[10.8012,106.7385]},{"id":38,"a":"Quận 2","n":"Phá lấu bò Cô Lài","c":"snack","t":["phá lấu bò","phá lấu"],"d":null,"ad":"155 đường số 42, Bình Trưng Đông, Quận 2, TP. HCM, Việt Nam","p":[20000,50000],"h":"13:30 – 21:00 (thứ 2 – Chủ Nhật)","hs":"13:30-21:00","x":null,"k":"","pos":[10.7852,106.7725]},{"id":39,"a":"Quận 2","n":"Bê thui 39","c":"restaurant","t":["bê thui"],"d":null,"ad":"39 Song Hành, Thảo Điền, Quận 2, TP. HCM","p":[50000,300000],"h":"10:00 – 23:45 (thứ 2 – Chủ Nhật)","hs":"10:00-23:45","x":null,"k":"","pos":[10.8005,106.7422]},{"id":40,"a":"Quận 9","n":"Ốc Nhây","c":"seafood","t":["ốc"],"d":null,"ad":"49 Đường số 7, Phước Bình, Quận 9, Thành phố Hồ Chí Minh","p":[15000,40000],"h":"17:00 – 23:00","hs":"17:00-23:00","x":"Thường đông khách lúc 20h00","k":"","pos":[10.8225,106.7745]},{"id":41,"a":"Quận 9","n":"Bánh tráng nướng Đà Lạt","c":"snack","t":["bánh tráng nướng","ăn vặt"],"d":null,"ad":"19B đường Làng Tăng Phú, Tăng Nhơn Phú A, Quận 9, Thành phố Hồ Chí Minh","p":[6000,20000],"h":"15:30 – 20:30 và 15:30 – 21:00","hs":"15:30-21:00","x":"Thường đông khách lúc 19h00","k":"","pos":[10.8442,106.7915]},{"id":42,"a":"Quận 9","n":"Bún bò Ngọc Dung","c":"noodle","t":["bún bò"],"d":null,"ad":"504-506 Hoàng Hữu Nam, Long Bình, Quận 9, Thành phố Hồ Chí Minh","p":[30000,50000],"h":"06:00 – 22:00","hs":"6:00-22:00","x":"Thường đông khách lúc 7h00","k":"","pos":[10.8725,106.8212]},{"id":44,"a":"Quận 9","n":"Quán Ăn Sân Vườn Lúa","c":"restaurant","t":["sân vườn"],"d":null,"ad":"19A đường 182 Lã Xuân Oai, Tăng Nhơn Phú A, Quận 9, Thành phố Hồ Chí Minh","p":[20000,50000],"h":"09:00 – 22:30","hs":"9:00-22:30","x":"Thường đông khách lúc 19h00","k":"","pos":[10.8415,106.7952]},{"id":45,"a":"Quận Thủ Đức","n":"Bò Chảo - Lẩu Tá Lả Thủ Đức","c":"hotgrill","t":["bò chảo","lẩu tá lả","lẩu"],"d":null,"ad":"781 Kha Vạn Cân, phường Linh Chiểu, Thủ Đức, TP. HCM","p":[189000,399000],"h":"11:00 – 22:00","hs":"11:00-22:00","x":null,"k":"","pos":[10.8552,106.7588]},{"id":46,"a":"Quận Thủ Đức","n":"Chè Chú Gấu","c":"sweet","t":["chè"],"d":null,"ad":"224 Tô Ngọc Vân, P. Linh Đông, Q. Thủ Đức, TP. HCM.","p":[20000,50000],"h":"09:00 – 22:00","hs":"9:00-22:00","x":null,"k":"","pos":[10.8588,106.7512]},{"id":47,"a":"Quận Thủ Đức","n":"Hủ tiếu 10 Đoàn","c":"noodle","t":["hủ tiếu"],"d":null,"ad":"49 Đặng Văn Bi, phường Trường Thọ, quận Thủ Đức, TP.HCM","p":[46000,215000],"h":"06:00 – 20:30","hs":"6:00-20:30","x":null,"k":"","pos":[10.8425,106.7628]},{"id":49,"a":"Quận Thủ Đức","n":"Sao Việt - Trái Cây Tô","c":"sweet","t":["trái cây tô","trái cây"],"d":null,"ad":"60 Tô Vĩnh Diện, phường Linh Chiểu, quận Thủ Đức, TP.HCM","p":[20000,30000],"h":"09:00 – 23:00","hs":"9:00-23:00","x":null,"k":"","pos":[10.8536,106.7615]},{"id":50,"a":"Quận 10","n":"Bánh canh ghẹ muối ớt xanh","c":"noodle","t":["bánh canh ghẹ","bánh canh","ghẹ"],"d":null,"ad":"484C Nguyễn Tri Phương, Phường 9, Quận 10, Thành phố Hồ Chí Minh","p":[45000,75000],"h":"09:00 – 22:30","hs":"9:00-22:30","x":"Thường không đông đúc","k":"https://goo.gl/maps/dsznvZQMp92b4GY58","pos":[10.7668,106.6682]},{"id":51,"a":"Quận 10","n":"Quán chú Dũng - Hủ tiếu bò kho","c":"noodle","t":["hủ tiếu","hủ tiếu bò kho","bò kho"],"d":null,"ad":"428/8A Nguyễn Chí Thanh, phường 6, quận 10, TP. HCM","p":[20000,35000],"h":"07:00 – 21:30 (thứ hai – thứ sáu); 07:00 – 13:30 và 15:00 – 21:00 (thứ bảy, chủ nhật)","hs":"1-5@7:00-21:30|0,6@7:00-13:30,15:00-21:00","x":"Thường đông khách lúc 11h – 12h","k":"https://maps.app.goo.gl/9w2gkdYfNGJo1Vmb9","pos":[10.7595,106.6632]},{"id":53,"a":"Quận 10","n":"Bún đậu mắm tôm Tiến Hải","c":"noodle","t":["bún đậu mắm tôm","bún đậu"],"d":null,"ad":"409 Nguyễn Tri Phương, Phường 5, Quận 10, Thành phố Hồ Chí Minh","p":[20000,55000],"h":"09:30 – 22:00 (thứ 2 – thứ 7)","hs":"1-6@9:30-22:00","x":"Thường đông khách lúc 15h","k":"https://www.google.com/maps/place/B%C3%BAn+%C4%91%E1%BA%ADu+m%E1%BA%AFm+t%C3%B4m+Ti%E1%BA%BFn+H%E1%BA%A3i/@10.7635886,106.6678519,15z/data=!4m2!3m1!1s0x0:0x3f6797b88f5e38b9?sa=X&ved=2ahUKEwiQxPrv94r6AhVQdXAKHRXBAy8Q_BJ6BAhSEAU","pos":[10.7636,106.6679]},{"id":54,"a":"Quận 10","n":"Cơm Niêu Thiên Lý – Quận 10","c":"rice","t":["cơm niêu"],"d":null,"ad":"87A Cửu Long, phường 15, quận 10, TP. HCM","p":[12000,361000],"h":"10:00 – 14:30 và 16:00 – 21:30","hs":"10:00-14:30,16:00-21:30","x":"Thường đông khách 12h00","k":"https://goo.gl/maps/HzyWwgTWX6aKzACJ9","pos":[10.7812,106.6648]},{"id":55,"a":"Quận 10","n":"Phở bò viên Hớn Hưng","c":"noodle","t":["phở bò viên","phở","bò viên"],"d":null,"ad":"488 Ngô Gia Tự, Phường 4, Quận 10, Thành phố Hồ Chí Minh","p":[40000,60000],"h":"15:30 – 21:00 (thứ hai – chủ nhật)","hs":"15:30-21:00","x":"Thường đông khách lúc 19h – 20h","k":"https://maps.app.goo.gl/NVxQpsCWcyAYxPc47","pos":[10.7642,106.6718]},{"id":56,"a":"Quận Bình Thạnh","n":"Hủ tiếu Nam Vang Minh Phát","c":"noodle","t":["hủ tiếu Nam Vang","hủ tiếu"],"d":null,"ad":"13 Phan Bội Châu, Phường 2, Quận Bình Thạnh, Thành phố Hồ Chí Minh","p":[10000,60000],"h":"06:00 – 11:00; 16:00 – 21:00","hs":"6:00-11:00,16:00-21:00","x":null,"k":"https://g.page/hutiunamvangminhphat?share","pos":[10.8022,106.6975]},{"id":57,"a":"Quận Bình Thạnh","n":"Phở Thanh Đa","c":"noodle","t":["phở"],"d":null,"ad":"61 Bình Quới, phường 27, quận Bình Thạnh, TP.HCM","p":[33000,55000],"h":"06:00 – 11:45 và 15:00 – 00:00 (các ngày trong tuần)","hs":"6:00-11:45,15:00-24:00","x":"Thường đông khách lúc 19h00","k":"https://www.google.com/maps/place/Ph%E1%BB%9F+Thanh+%C4%90a/@10.8160304,106.7168489,17z/data=!3m1!4b1!4m5!3m4!1s0x3175289c190f96a5:0xd87b8ae7d734bd8e!8m2!3d10.8160304!4d106.7190376","pos":[10.816,106.719]},{"id":58,"a":"Quận Bình Thạnh","n":"Bánh canh cua Hiền","c":"noodle","t":["bánh canh cua","bánh canh"],"d":null,"ad":"395 Bùi Đình Tuý, phường 14, quận Bình Thạnh, TP.HCM","p":[25000,40000],"h":"06:00 – 22:00 (các ngày trong tuần)","hs":"6:00-22:00","x":"Thường đông khách lúc 18h00","k":"https://goo.gl/maps/VpozEsnXz4fnk5Zx7","pos":[10.8082,106.7018]},{"id":59,"a":"Quận Bình Thạnh","n":"Cơm gà xối mỡ Út Minh","c":"rice","t":["cơm gà xối mỡ","cơm gà","gà"],"d":null,"ad":"Số 1, lô A3 Nguyễn Gia Trí (đường D2 nối dài), phường 25, quận Bình Thạnh, TP.HCM","p":[15000,45000],"h":"08:00 – 19:00 (các ngày trong tuần)","hs":"8:00-19:00","x":"Thường đông khách lúc 12h00","k":"https://goo.gl/maps/ayaB1TYdx3k3tm8n9","pos":[10.8048,106.7162]},{"id":60,"a":"Quận Bình Thạnh","n":"Bún bò Huế Kim Hương","c":"noodle","t":["bún bò Huế","bún bò"],"d":null,"ad":"118 Phan Văn Trị, phường 12, quận Bình Thạnh, TP.HCM","p":[10000,57000],"h":"06:30 – 21:30","hs":"6:30-21:30","x":"Thường đông khách lúc 12h00","k":"https://g.page/Bunbohuekimhuongbinhthanh?share","pos":[10.8124,106.6958]},{"id":61,"a":"Quận Phú Nhuận","n":"Cơm tấm Ba Ghiền","c":"rice","t":["cơm tấm"],"d":null,"ad":"84 Đặng Văn Ngữ, phường 10, quận Phú Nhuận, TP.HCM","p":[60000,100000],"h":"07:00 – 21:30","hs":"7:00-21:30","x":null,"k":"https://maps.app.goo.gl/YTR1AtER6vUaTkf78","pos":[10.7932,106.6752]},{"id":62,"a":"Quận Phú Nhuận","n":"Quán Hiền Cây Quéo - Bánh Canh Chả Cá Phan Rang","c":"noodle","t":["bánh canh chả cá","bánh canh","chả cá"],"d":null,"ad":"129/1 Hoàng Văn Thụ, phường 8, quận Phú Nhuận, TP.HCM","p":[35000,50000],"h":"08:00 – 21:00","hs":"8:00-21:00","x":null,"k":"https://maps.app.goo.gl/L3QSmobjzJzwY6b29","pos":[10.7995,106.6748]},{"id":63,"a":"Quận Phú Nhuận","n":"Hủ Tiếu Mực Ông Già Cali","c":"noodle","t":["hủ tiếu mực","hủ tiếu","mực"],"d":null,"ad":"001 chung cư A3, Phan Xích Long, Phường 7, Quận Phú Nhuận, Thành phố Hồ Chí Minh","p":[12000,81000],"h":"06:00 – 13:30; 16:00 – 21:00","hs":"6:00-13:30,16:00-21:00","x":"Thường đông khách lúc 19h00","k":"https://goo.gl/maps/tT7hQV5E3VZyJo2C6","pos":[10.7972,106.6902]},{"id":64,"a":"Quận Phú Nhuận","n":"Bún riêu hẻm Ông Tiên","c":"noodle","t":["bún riêu"],"d":null,"ad":"Hẻm 96 Phan Đình Phùng, Phường 2, Phú Nhuận, Thành phố Hồ Chí Minh","p":[25000,45000],"h":"09:00 – 16:00 (thứ 2 – chủ nhật)","hs":"9:00-16:00","x":null,"k":"https://goo.gl/maps/pP9ybnGpWRvJ8up76","pos":[10.7945,106.6838]},{"id":65,"a":"Quận Phú Nhuận","n":"Phở Hoa Bắc","c":"noodle","t":["phở"],"d":null,"ad":"50F2 Đường Hoa Cau, Phường 7, Phú Nhuận, Thành phố Hồ Chí Minh","p":[25000,60000],"h":"05:30 – 14:30 (thứ 2 – chủ nhật)","hs":"5:30-14:30","x":null,"k":"https://goo.gl/maps/hy38nhigjufQQkZr8","pos":[10.7982,106.6888]},{"id":66,"a":"Quận Gò Vấp","n":"Bánh mì chảo cô Ba Hậu","c":"snack","t":["bánh mì chảo","bánh mì"],"d":null,"ad":"36 Đường Số 18, Phường 8, Gò Vấp, Thành phố Hồ Chí Minh","p":[30000,145000],"h":"07:00 – 22:00","hs":"7:00-22:00","x":"Thường không đông đúc","k":"https://g.page/Banhmichaoco3hau?share","pos":[10.8385,106.6525]},{"id":67,"a":"Quận Gò Vấp","n":"Lẩu ếch 6 Hiếu","c":"hotgrill","t":["lẩu ếch","lẩu","ếch"],"d":null,"ad":"429 Quang Trung, Phường 10, Gò Vấp, Thành phố Hồ Chí Minh","p":[35000,150000],"h":"15:00 – 22:00","hs":"15:00-22:00","x":"Thường đông khách lúc 19h00","k":"https://goo.gl/maps/6FP6CwkDPffZGNdT6","pos":[10.8325,106.6642]},{"id":68,"a":"Quận Gò Vấp","n":"Bánh canh cá lóc Cường Đô La","c":"noodle","t":["bánh canh cá lóc","bánh canh","cá lóc"],"d":null,"ad":"42 Lê Thị Hồng, Phường 7, Gò Vấp, Thành phố Hồ Chí Minh","p":[35000,70000],"h":"06:30 – 21:30","hs":"6:30-21:30","x":"Thường không đông đúc","k":"https://goo.gl/maps/pAhCFHVK4nhsD6zr8","pos":[10.8228,106.6825]},{"id":69,"a":"Quận Gò Vấp","n":"Bánh mì cóc cô Bích","c":"snack","t":["bánh mì"],"d":null,"ad":"112a Nguyễn Thái Sơn, Phường 3, Gò Vấp, Thành phố Hồ Chí Minh","p":[10000,20000],"h":"09:00 – 21:00","hs":"9:00-21:00","x":"Thường xuyên đông đúc","k":"https://goo.gl/maps/HdwTpyUCmYULDYaD9","pos":[10.8172,106.6788]},{"id":70,"a":"Quận Gò Vấp","n":"Phá lấu bò Cây Trâm 1","c":"snack","t":["phá lấu bò","phá lấu"],"d":null,"ad":"208 Đ. Cây Trâm, Phường 8, Gò Vấp, Thành phố Hồ Chí Minh","p":[15000,25000],"h":"15:00 – 21:00","hs":"15:00-21:00","x":"Thường không đông đúc","k":"https://goo.gl/maps/71XWPTZUz4a4JHASA","pos":[10.8412,106.6548]},{"id":71,"a":"Quận 6","n":"Quán Một Tám Một","c":"restaurant","t":["món nhậu","món mồi","đồ nướng","lẩu","hải sản"],"d":"Quán nhậu sở hữu không gian mở thoáng mát ngay mặt tiền đường lớn. Thực đơn phong phú chuyên về các món mồi bén, đồ nướng, lẩu và hải sản tươi sống, là địa điểm lý tưởng để tụ họp bạn bè dịp cuối tuần.","ad":"181 Đ. Hậu Giang, Phường 5, Quận 6, TP.HCM","p":[50000,200000],"h":"15:00 – 23:00","hs":"15:00-23:00","x":null,"k":"","pos":[10.7502,106.6435]},{"id":72,"a":"Quận 6","n":"Ốc Trứng Muối 6","c":"seafood","t":["ốc","ốc sốt trứng muối","trứng muối"],"d":"Tiệm ốc cực kỳ thu hút giới trẻ với các món ốc đa dạng được chế biến cùng nước sốt trứng muối đặc trưng, béo ngậy và thơm lừng.","ad":"188A Đ. Mai Xuân Thưởng, Phường 1, Quận 6, TP.HCM","p":[30000,150000],"h":"16:00 – 23:00","hs":"16:00-23:00","x":null,"k":"","pos":[10.7478,106.6512]},{"id":73,"a":"Quận 6","n":"Hẻm Phố Quán - Quận 6","c":"restaurant","t":["món Việt","hải sản","món nhậu"],"d":"Quán ăn gia đình và quán nhậu bình dân trong khu vực Bình Phú, phục vụ các món Việt và hải sản với không gian dân dã, giá cả phải chăng.","ad":"227 Đ. Trần Văn Kiểu, Khu IV, Bình Phú, Quận 6, TP.HCM","p":[40000,180000],"h":"16:00 – 23:00","hs":"16:00-23:00","x":null,"k":"","pos":[10.7418,106.6285]},{"id":74,"a":"Quận 6","n":"Happy Garden Restaurant & Event","c":"restaurant","t":["món Hoa Việt","tiệc"],"d":"Nhà hàng có không gian rộng rãi, trang trọng, phù hợp cho tiệc cưới, sinh nhật và họp mặt gia đình với các món ăn Hoa - Việt đa dạng.","ad":"210 Nguyễn Văn Luông, Phường 11, Quận 6, TP.HCM","p":[150000,300000],"h":"10:00 – 22:00","hs":"10:00-22:00","x":null,"k":"","pos":[10.7452,106.6342]},{"id":75,"a":"Quận 6","n":"Nhà Hàng Sân Vườn 360","c":"restaurant","t":["sân vườn","đặc sản đồng quê","hải sản"],"d":"Không gian sân vườn xanh mát yên tĩnh, menu phong phú với các món đặc sản đồng quê và hải sản tươi, rất thích hợp cho những buổi đi ăn cùng gia đình.","ad":"336/27/9 Nguyễn Văn Luông, Phường 12, Quận 6, TP.HCM","p":[100000,250000],"h":"10:00 – 22:30","hs":"10:00-22:30","x":null,"k":"","pos":[10.7485,106.6318]},{"id":76,"a":"Quận 7","n":"Tràng An Quán - Nhà hàng Ẩm Thực Đồng Quê","c":"restaurant","t":["món ba miền","ẩm thực đồng quê"],"d":"Nhà hàng nổi bật với phong cách ẩm thực đồng quê yên tĩnh giữa lòng Quận 7. Nơi đây chuyên phục vụ các món ăn ba miền truyền thống đậm đà.","ad":"131 Đường số 47, Tân Hưng, Quận 7, TP.HCM","p":[200000,700000],"h":"10:00 – 23:00","hs":"10:00-23:00","x":null,"k":"","pos":[10.7422,106.7068]},{"id":77,"a":"Quận 7","n":"Ẩm thực sân vườn Mái Lá","c":"restaurant","t":["sân vườn","món ăn gia đình","ẩm thực Nam Bộ"],"d":"Mang đúng tinh thần \"mái lá\", quán có không gian cực kỳ rộng rãi, mát mẻ, chuyên phục vụ các món ăn gia đình và ẩm thực dân dã Nam Bộ.","ad":"1D Đường số 36, Tân Hưng, Quận 7, TP.HCM","p":[100000,400000],"h":"10:00 – 22:30","hs":"10:00-22:30","x":null,"k":"","pos":[10.7438,106.7042]},{"id":78,"a":"Quận 7","n":"Nhà hàng Hoàng Tâm - Phú Mỹ Hưng","c":"restaurant","t":["món thuần Việt","bánh xèo","gỏi cuốn","cơm miền Tây"],"d":"Điểm đến lý tưởng trong khu Phú Mỹ Hưng để thưởng thức các món ăn thuần Việt, từ bánh xèo, gỏi cuốn đến các mâm cơm miền Tây chất lượng.","ad":"24 Raymondienne, Khu đô thị Phú Mỹ Hưng, Quận 7, TP.HCM","p":[150000,350000],"h":"07:00 – 22:00","hs":"7:00-22:00","x":null,"k":"","pos":[10.7265,106.7218]},{"id":79,"a":"Quận 7","n":"Dìn Ký Cù Lao Xanh","c":"restaurant","t":["hải sản","đặc sản đồng quê ba miền","sân vườn"],"d":"Đây là một khu ẩm thực sinh thái cực kỳ độc đáo nằm trên một \"cù lao\" nhỏ tách biệt giữa lòng Quận 7. Thực khách sẽ được trải nghiệm đi thuyền chèo qua đoạn sông ngắn để vào nhà hàng. Không gian quán vô cùng rộng rãi, rợp bóng cây xanh mát mẻ tĩnh lặng. Thực đơn hội tụ đa dạng các loại hải sản bơi tại hồ và đặc sản đồng quê ba miền, là điểm đến lý tưởng để \"đổi gió\" thư giãn cuối tuần cùng người thân và bạn bè.","ad":"88 Nguyễn Đức Cảnh, Phường Tân Phong, Quận 7, TP.HCM","p":[200000,700000],"h":"10:00 – 23:00","hs":"10:00-23:00","x":null,"k":"","pos":[10.7228,106.7155]},{"id":80,"a":"Quận 8","n":"Ốc Tuyết","c":"seafood","t":["ốc","ốc xào me","ốc nướng mỡ hành"],"d":"Tiệm ốc bình dân quen thuộc và cực kỳ đông khách tại Quận 8. Quán nổi bật với mức giá học sinh - sinh viên, thực đơn đa dạng các món ốc xào me, nướng mỡ hành.","ad":"18 Đường số 4, Chánh Hưng, Quận 8, TP.HCM","p":[30000,60000],"h":"16:00 – 22:30","hs":"16:00-22:30","x":null,"k":"","pos":[10.7412,106.6718]},{"id":81,"a":"Quận 8","n":"Nhà hàng Hương Tràm","c":"restaurant","t":["món Việt","hải sản"],"d":"Sở hữu không gian rộng rãi, phục vụ ẩm thực Việt truyền thống kết hợp hải sản. Quán thường được người dân địa phương chọn để đặt tiệc, liên hoan.","ad":"192 Đ. Phạm Đức Sơn, Phường 16, Quận 8, TP.HCM","p":[100000,250000],"h":"10:00 – 22:30","hs":"10:00-22:30","x":null,"k":"","pos":[10.7185,106.6215]},{"id":82,"a":"Quận 8","n":"Tùng Quán","c":"restaurant","t":["món nhậu","món mồi"],"d":"Địa điểm ăn uống, nhậu bình dân với giá thành hợp lý ngay khu dân cư sầm uất. Đồ ăn lên nhanh, đa dạng các món mồi hấp dẫn.","ad":"216 Cao Lỗ, Phường 4, Quận 8, TP.HCM","p":[50000,150000],"h":"15:00 – 23:00","hs":"15:00-23:00","x":null,"k":"","pos":[10.7395,106.6762]},{"id":83,"a":"Quận 8","n":"Hiccup - Bò Tùng Xẻo","c":"hotgrill","t":["bò tùng xẻo","bò nướng","bò"],"d":"Quán nổi bật với đặc sản bò tùng xẻo nướng than hoa thơm lừng. Thịt bò được tẩm ướp đậm đà, vẫn giữ được độ mềm ngọt nguyên bản khi thưởng thức.","ad":"36 Đ. Phong Phú, Phường 12, Quận 8, TP.HCM","p":[80000,200000],"h":"16:00 – 23:00","hs":"16:00-23:00","x":null,"k":"","pos":[10.7358,106.6565]},{"id":84,"a":"Quận 8","n":"Cơm Tấm Ba Há","c":"rice","t":["cơm tấm","chả cá thác lác","chả trứng","sườn nướng mật ong"],"d":"Tiệm cơm tấm vang danh ở Quận 8 với món chả cá thác lác chiên, chả trứng cá mặn siêu dày, kết hợp sườn nướng mật ong thơm phức.","ad":"389 Đ. Hưng Phú, Phường 9, Quận 8, TP.HCM","p":[45000,80000],"h":"16:00 – 20:30","hs":"16:00-20:30","x":null,"k":"","pos":[10.7472,106.6685]},{"id":85,"a":"Quận 11","n":"Quán sủi cảo Thiên Thiên","c":"snack","t":["sủi cảo","da heo","mực tro"],"d":"Tọa lạc trên \"phố sủi cảo\" sầm uất nhất, Thiên Thiên trứ danh với viên sủi cảo nhân tôm thịt to tròn, ăn kèm nước dùng thanh ngọt và da heo, mực tro giòn sần sật.","ad":"195 Hà Tôn Quyền, Phường 4, Quận 11, TP.HCM","p":[50000,90000],"h":"14:00 – 01:30","hs":"14:00-1:30","x":"Nghỉ các ngày Lễ/Tết tùy năm","k":"","pos":[10.7582,106.6512]},{"id":86,"a":"Quận 11","n":"Quán Minh Hương","c":"restaurant","t":["món Hoa Việt"],"d":"Quán ăn gia đình chuyên phục vụ các món Hoa - Việt đặc trưng, có tiếng lâu đời ở khu vực này nhờ khẩu vị đậm đà và phong cách phục vụ chu đáo.","ad":"8 Đ. Tống Văn Trân, Phường 5, Quận 11, TP.HCM","p":[50000,150000],"h":"06:00 – 22:00","hs":"6:00-22:00","x":null,"k":"","pos":[10.7688,106.6462]},{"id":87,"a":"Quận 11","n":"Quán ăn Dương Thành","c":"restaurant","t":["vịt quay","heo quay","gà ác tiềm thảo mộc"],"d":"Tiệm ăn của người Hoa vô cùng chuẩn vị, chuyên các loại vịt quay, heo quay, gà ác tiềm thảo mộc bổ dưỡng với nguyên liệu được chọn lọc kỹ.","ad":"64 - 68 Phan Xích Long, Phường 16, Quận 11, TP.HCM","p":[150000,400000],"h":"10:00 – 23:00","hs":"10:00-23:00","x":null,"k":"","pos":[10.7565,106.6485]},{"id":88,"a":"Quận 11","n":"Tiệm Cơm Truyền Ký","c":"rice","t":["cơm","gà hấp muối","thú linh chiên giòn"],"d":"Một trong những quán cơm người Hoa gốc Hẹ hiếm hoi còn giữ nguyên vị truyền thống lâu năm. Không gian hoài cổ, cực nổi tiếng với món gà hấp muối và thú linh chiên giòn.","ad":"39/20 Đ. Lý Thường Kiệt, Phường 7, Quận 11, TP.HCM","p":[80000,200000],"h":"11:00 – 14:00 và 17:00 – 21:00","hs":"11:00-14:00,17:00-21:00","x":null,"k":"","pos":[10.7615,106.6562]},{"id":89,"a":"Quận 11","n":"Quán Ăn Cường Ký Mì Gia (Sủi Cảo 157)","c":"snack","t":["sủi cảo","mì","mì gia","tôm"],"d":"Cùng nằm trên con phố sủi cảo sầm uất nhưng Cường Ký nổi bật bởi độ tươi giòn của tôm trong nhân cảo và sợi mì dai trứng vàng óng tự làm thủ công.","ad":"157 Hà Tôn Quyền, Phường 4, Quận 11, TP.HCM","p":[50000,80000],"h":"14:00 – 01:00","hs":"14:00-1:00","x":null,"k":"","pos":[10.7578,106.6515]},{"id":90,"a":"Quận 12","n":"Nhà hàng Đại Phú","c":"restaurant","t":["hải sản","tiệc"],"d":"Khuôn viên nhà hàng siêu rộng rãi, trang bị nhiều sảnh và phòng VIP. Nổi tiếng với list hải sản phong phú, đây là điểm đến quen thuộc ở Quận 12 cho tiệc tùng.","ad":"56C Nguyễn Văn Quá, Đông Hưng Thuận, Quận 12, TP.HCM","p":[150000,350000],"h":"10:00 – 23:00","hs":"10:00-23:00","x":null,"k":"","pos":[10.8415,106.6295]},{"id":91,"a":"Quận 12","n":"Tà Lài Quán - Nướng Than Hoa","c":"hotgrill","t":["nướng","nướng than hoa","nướng ngói","đồ nướng"],"d":"Quán nướng ngói và nướng than hoa mang hương vị vô cùng đậm đà. Các món nướng được ướp kỹ lưỡng, rất hợp lý để nhâm nhi cùng chiến hữu.","ad":"27G8 Đ. DD4, Đông Hưng Thuận, Quận 12, TP.HCM","p":[60000,200000],"h":"16:00 – 23:00","hs":"16:00-23:00","x":null,"k":"","pos":[10.8368,106.6248]},{"id":92,"a":"Quận 12","n":"KDL Bến Xưa - Vườn Ẩm Thực Nan","c":"restaurant","t":["đặc sản ba miền","sân vườn"],"d":"Tổ hợp ẩm thực sinh thái cực lớn với lối kiến trúc cung đình truyền thống và mảng xanh thiên nhiên rộng, chuyên các món ăn đặc sản ba miền cao cấp.","ad":"39A Hà Huy Giáp, Phường Thạnh Lộc, Quận 12, TP.HCM","p":[150000,400000],"h":"08:00 – 22:00","hs":"8:00-22:00","x":null,"k":"","pos":[10.8585,106.6795]},{"id":93,"a":"Quận 12","n":"Ẩm Thực Song Phụng 2","c":"restaurant","t":["sân vườn","lẩu","nướng","ẩm thực đồng quê"],"d":"Quán ăn sân vườn view cực thoáng đãng. Menu chuyên trị các món lẩu, nướng và ẩm thực đồng quê, là lựa chọn đổi gió thư giãn lý tưởng dịp cuối tuần.","ad":"637/10/49 Tổ 30, Khu Phố 2, Thới An, Quận 12, TP.HCM","p":[100000,250000],"h":"10:00 – 22:30","hs":"10:00-22:30","x":null,"k":"","pos":[10.8745,106.6542]},{"id":94,"a":"Quận 12","n":"Giao Khẩu Quán","c":"restaurant","t":["món điểm tâm sáng","món nhậu"],"d":"Điểm dừng chân ăn sáng và ăn gia đình có không gian rất gần gũi. Quán phục vụ từ các món điểm tâm sáng tới các món nhậu mộc mạc và chuẩn vị.","ad":"197/50/23 Đường Thạnh Lộc 31, Thạnh Lộc, Quận 12, TP.HCM","p":[40000,150000],"h":"06:00 – 22:00","hs":"6:00-22:00","x":null,"k":"","pos":[10.8692,106.6845]}];
+/* ===================== CORE: chuẩn hoá, tìm kiếm, giờ mở cửa ===================== */
+const TONE_G=/[\u0300\u0301\u0303\u0309\u0323]/g;
+const stripAll=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d");
+const nfc=s=>String(s).normalize("NFC").toLowerCase();
+/* Token: {raw, nz (không dấu), base (giữ â,ê,ô,ơ,ư,ă,đ nhưng bỏ dấu thanh), tone (dấu thanh), ascii} */
+function mkTok(raw){const d=raw.normalize("NFD");return{raw,nz:stripAll(raw),base:d.replace(TONE_G,"").normalize("NFC"),tone:(d.match(TONE_G)||[]).join(""),ascii:/^[\x00-\x7f]+$/.test(raw)}}
+const tok=s=>(nfc(s).match(/[\p{L}\p{N}~]+/gu)||[]).map(mkTok);
+/* So khớp từ: gõ KHÔNG dấu → khớp mọi dấu; gõ CÓ dấu → phải đúng dấu thanh và dấu mũ ("phở" ≠ "phố", "thủy" = "thuỷ"). */
+function tokEq(q,w,pref){
+  if(q.ascii?q.nz===w.nz:(q.base===w.base&&q.tone===w.tone))return true;
+  if(pref&&q.nz.length>=4&&!q.raw.includes("~")){return q.ascii?w.nz.startsWith(q.nz):(w.base.startsWith(q.base)&&(!q.tone||q.tone===w.tone))}
+  return false}
+function phrase(arr,qt,pref){const n=qt.length;for(let i=0;i+n<=arr.length;i++){let ok=true;for(let j=0;j<n&&ok;j++)ok=tokEq(qt[j],arr[i+j],pref&&j===n-1);if(ok)return true}return false}
+const allIn=(arr,qt,pref)=>qt.every((q,j)=>arr.some(w=>tokEq(q,w,pref&&j===qt.length-1)));
+
+/* Từ chung chung trong tên quán: bỏ ra khỏi "tên lõi" để gõ "pho" không bị khớp nhầm "Hẻm PHỐ Quán". */
+const GENERIC=new Set("quán tiệm nhà hàng ăn hẻm phố ẩm thực sân vườn và quận kdl".split(" "));
+
+/* Cụm món ghép (một món, không tách): "phở cuốn" ≠ "phở". Lấy tự động từ các tag có dấu ~ */
+let GLUE=[];
+function buildGlue(){const s=new Set();DATA.forEach(x=>x.t.forEach(t=>t.split(/\s+/).forEach(w=>{if(w.includes("~"))s.add(w)})));GLUE=[...s].map(g=>({tok:mkTok(g),parts:g.split("~").map(p=>mkTok(p))}))}
+function mergeGlue(qt){const out=[];for(let i=0;i<qt.length;i++){let g=null;for(const c of GLUE){const n=c.parts.length;if(i+n<=qt.length&&c.parts.every((p,j)=>tokEq(qt[i+j],p))){g=c;break}}
+  if(g){const n=g.parts.length,asc=qt.slice(i,i+n).every(t=>t.ascii);out.push({...g.tok,ascii:asc});i+=n-1}else out.push(qt[i])}return out}
+
+function indexPlace(x){x.nameT=tok(x.n);x.coreT=x.nameT.filter(w=>!GENERIC.has(w.raw));x.tagT=x.t.map(tok);x.allT=[...x.coreT,...x.tagT.flat()];x.addrT=tok(x.ad);x.S=parseSched(x.hs)}
+
+/* Điểm khớp. 0 = KHÔNG khớp (loại hẳn, không "gợi ý bừa"). */
+function scoreQ(x,qt,pref){
+  if(!qt.length)return{s:1,why:""};
+  if(phrase(x.coreT,qt,pref))return{s:100,why:"name"};
+  const tg=x.tagT.findIndex(a=>phrase(a,qt,pref));if(tg>=0)return{s:90,why:"tag",tag:x.t[tg]};
+  if(qt.length>1){if(allIn(x.coreT,qt,pref))return{s:85,why:"name"};
+    const t2=x.tagT.findIndex(a=>allIn(a,qt,pref));if(t2>=0)return{s:70,why:"tag",tag:x.t[t2]};
+  }
+  if((qt.length>1||!qt[0].ascii)&&phrase(x.nameT,qt,pref))return{s:60,why:"name"};
+  if(qt.length>1&&phrase(x.addrT,qt,false))return{s:20,why:"addr"};
+  return{s:0}}
+
+/* ===================== Hiểu câu hỏi ===================== */
+const EN={"broken rice":"cơm tấm","hot pot":"lẩu","hotpot":"lẩu","sweet soup":"chè","dessert":"chè","snails":"ốc","snail":"ốc","grilled":"nướng","grill":"nướng","beef noodle":"bún bò","crab":"cua","beef":"bò","chicken":"gà","pork":"heo","frog":"ếch","seafood":"hải sản","dumplings":"sủi cảo","dumpling":"sủi cảo","duck":"vịt","eel":"lươn","shrimp":"tôm","porridge":"cháo","spring rolls":"gỏi cuốn","rice":"cơm","fish":"cá"};
+const EN_RE=new RegExp("(?<![\\p{L}\\p{N}])("+Object.keys(EN).sort((a,b)=>b.length-a.length).join("|")+")(?![\\p{L}\\p{N}])","gu");
+const NOTL="(?<![\\p{L}\\p{N}])",NOTR="(?![\\p{L}\\p{N}])";
+const RX=(src)=>new RegExp(NOTL+"(?:"+src+")"+NOTR,"giu");
+const STOP=new Set("tôi toi muốn muon cần can tìm tim kiếm kiem ăn an uống uong gần gan ở o tại tai khu vực vuc quận quan district dist near i want to eat the a in for some good best ngon nhất nhat món mon nào nao cho nhé nhe đi di giúp giup gợi goi ý một mot vài vai là la và va gì gi quanh đây day tp q".split(" "));
+const AREAS=[["thu duc","Quận Thủ Đức"],["tan binh","Quận Tân Bình"],["tan phu","Quận Tân Phú"],["binh tan","Quận Bình Tân"],["binh thanh","Quận Bình Thạnh"],["go vap","Quận Gò Vấp"],["phu nhuan","Quận Phú Nhuận"]];
+const MEALW={morning:[5,10],noon:[10,14],afternoon:[14,18],evening:[18,24]};
+
+function parseQuery(text,known){
+  let w=nfc(text).replace(EN_RE,m=>EN[m]);
+  w=w.replace(/hủ tíu/g,"hủ tiếu").replace(/hu tiu/g,"hu tieu").replace(/mỳ(?![\p{L}])/gu,"mì");
+  const I={area:null,areaMiss:null,open:false,maxP:null,minP:null,meal:null,near:false,cat:null};
+  const cut=(re,fn)=>{w=w.replace(re,(...a)=>{fn&&fn(a);return " "})};
+  /* khu vực: "quận 5", "q.5", "district 5" — số phải trọn vẹn (quận 1 ≠ quận 10) */
+  cut(RX("(?:quận|quan|q\\.?|district|dist\\.?)\\s*(\\d{1,2})"),a=>{const n=+a[1],k="Quận "+n;if(known.has(k))I.area=k;else I.areaMiss=k});
+  if(!I.area&&!I.areaMiss){const z=stripAll(w);if(z.length===w.length){for(const[p,name]of AREAS){const m=new RegExp("(?:^|[^a-z0-9])(?:q\\.?\\s*|quan\\s+)?(?:tp\\.?\\s*)?("+p+")(?![a-z0-9])").exec(z);if(m){const s=m.index+m[0].indexOf(m[1]);w=w.slice(0,s)+" ".repeat(p.length)+w.slice(s+p.length);I.area=name;break}}}}
+  cut(RX("gần tôi|gần đây|gần mình|quanh đây|gan toi|gan day|near me|nearby|nearest"),()=>I.near=true);
+  cut(RX("đang mở cửa|đang mở|dang mo cua|dang mo|mở cửa|mo cua|open now|opening now|bây giờ|bay gio|giờ này|gio nay"),()=>I.open=true);
+  cut(RX("(?:dưới|duoi|under|<)\\s*(\\d{2,3})\\s*(?:k|nghìn|nghin|ngàn|ngan)"),a=>I.maxP=+a[1]*1000);
+  cut(RX("(?:dưới|duoi|under|<)\\s*(\\d{2,3})[.,]000\\s*(?:đ|d|vnd|đồng|dong)?"),a=>I.maxP=+a[1]*1000);
+  cut(RX("(?:trên|tren|over|above|>)\\s*(\\d{2,3})\\s*(?:k|nghìn|nghin|ngàn|ngan)"),a=>I.minP=+a[1]*1000);
+  cut(RX("giá rẻ|gia re|rẻ|bình dân|binh dan|cheap"),()=>{if(I.maxP==null)I.maxP=50000});
+  cut(RX("(?:buổi|buoi|ăn|an|bữa|bua)\\s+(sáng|sang|trưa|trua|chiều|chieu|tối|toi|khuya)"),a=>{const k=stripAll(a[1]);I.meal={sang:"morning",trua:"noon",chieu:"afternoon",toi:"evening",khuya:"evening"}[k]});
+  cut(RX("ăn vặt|an vat|snack"),()=>I.cat="snack");
+  cut(RX("tráng miệng|trang mieng|đồ ngọt|do ngot"),()=>I.cat="sweet");
+  let qt=tok(w).filter(t=>!STOP.has(t.raw));
+  I.qt=mergeGlue(qt);I.qs=I.qt.map(t=>t.raw.replace(/~/g," ")).join(" ");
+  return I}
+
+/* ===================== Giờ mở cửa ===================== */
+function parseSched(s){if(!s)return null;const days=Array.from({length:7},()=>[]);
+  s.split("|").forEach(g=>{let ds=[0,1,2,3,4,5,6],body=g;const at=g.indexOf("@");
+    if(at>=0){ds=[];g.slice(0,at).split(",").forEach(p=>{const m=p.match(/^(\d)(?:-(\d))?$/);if(m){const a=+m[1],b=m[2]!=null?+m[2]:a;for(let d=a;d<=b;d++)ds.push(d)}});body=g.slice(at+1)}
+    body.split(",").forEach(iv=>{const m=iv.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);if(m){const s0=+m[1]+m[2]/60;let e0=+m[3]+m[4]/60;if(e0<=s0)e0+=24;ds.forEach(d=>days[d].push([s0,e0]))}})});
+  return days}
+function vnNow(){try{const p=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Ho_Chi_Minh",weekday:"short",hour:"numeric",minute:"numeric",hourCycle:"h23"}).formatToParts(new Date()),g=t=>p.find(o=>o.type===t).value;
+  return{d:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(g("weekday")),h:+g("hour")+ +g("minute")/60}}catch(e){const n=new Date();return{d:n.getDay(),h:n.getHours()+n.getMinutes()/60}}}
+/* true/false nếu biết giờ; null nếu tài liệu không có giờ cụ thể */
+function isOpen(x,now){if(!x.S)return null;now=now||vnNow();
+  return x.S[now.d].some(([s,e])=>now.h>=s&&now.h<e)||x.S[(now.d+6)%7].some(([s,e])=>e>24&&now.h<e-24)}
+function opensIn(x,[a,b],now){if(!x.S)return false;now=now||vnNow();
+  return x.S[now.d].some(([s,e])=>s<b&&Math.min(e,24)>a)||(a<6&&x.S[(now.d+6)%7].some(([s,e])=>e>24&&e-24>a))}
+
+/* ===================== Tìm kiếm ===================== */
+const priceOK=(x,I)=>{if(I.maxP==null&&I.minP==null)return true;if(!x.p)return false;return(I.maxP==null||x.p[1]<=I.maxP)&&(I.minP==null||x.p[0]>=I.minP)};
+function runSearch(I,opt){opt=opt||{};const now=vnNow();
+  const rows=[];for(const x of DATA){
+    if(opt.area&&x.a!==opt.area)continue;
+    if(I.cat&&x.c!==I.cat)continue;
+    if(!priceOK(x,I))continue;
+    if(I.open&&isOpen(x,now)!==true)continue;
+    if(I.meal&&!opensIn(x,MEALW[I.meal],now))continue;
+    const r=scoreQ(x,opt.qt||I.qt,!!opt.pref);if(r.s<=0)continue;
+    rows.push({x,...r})}
+  return rows}
+
+/* ===================== UI ===================== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let lang="vi";try{lang=localStorage.getItem("fm_lang")||"vi"}catch(e){}
+DATA.forEach(indexPlace);buildGlue();
+const KNOWN=new Set(DATA.map(x=>x.a));
+const AREA_LIST=[...KNOWN].sort((a,b)=>{const na=+a.replace(/\D/g,"")||999,nb=+b.replace(/\D/g,"")||999;return na-nb||a.localeCompare(b,"vi")});
+const CATI={noodle:"🍜",rice:"🍚",snack:"🥟",sweet:"🍧",hotgrill:"🍲",seafood:"🦪",restaurant:"🍽️"};
+const CTXQ={rain:["lẩu","phở","bún bò","bún riêu","bún mọc","bánh canh","cháo","súp cua"],hot:["chè","trái cây tô"]};
+DATA.forEach(x=>{x.icon=CATI[x.c]||"🍽️";x.ctx={};for(const k in CTXQ)x.ctx[k]=CTXQ[k].some(p=>scoreQ(x,tok(p),false).s>=90)});
+const MEAL_CATS={morning:["noodle","rice","snack"],noon:["rice","noodle","restaurant","snack"],afternoon:["snack","sweet","seafood"],evening:["hotgrill","seafood","restaurant","rice","noodle"]};
+
+const T={vi:{nav6:"Giới thiệu",abT:"Giới thiệu & ghi nhận",abD:"Foodie Map là sản phẩm học tập của nhóm, giúp người dân và du khách tìm quán ăn theo khu vực ở TP.HCM.",abAIt:"Việc sử dụng AI",abAI:"Nhóm có dùng AI (Claude của Anthropic) để hỗ trợ viết và sửa mã nguồn, rà soát lỗi dữ liệu và biên tập nội dung. Nhóm chịu trách nhiệm về nội dung cuối cùng. Ô “Bạn đang thèm món gì?” là bộ lọc từ khóa chạy ngay trên trình duyệt, không gọi mô hình AI nào.",abDt:"Nguồn dữ liệu",abDat:"Thông tin quán (tên, địa chỉ, giá, giờ mở cửa, mô tả) do nhóm tổng hợp trong tài liệu biên soạn. Quán nào chưa có giá hoặc giờ mở cửa thì web ghi “chưa có thông tin” thay vì tự suy đoán. Nút Google Maps giúp bạn đối chiếu địa chỉ thực tế.",abAddr:"Địa chỉ ghi theo cách gọi Quận/Phường đang dùng trong tài liệu; đơn vị hành chính của TP.HCM có thể đã thay đổi, vui lòng kiểm tra lại khi đến quán.",abCt:"Công cụ và bản quyền",cr1:"Bản đồ nền:",cr2:"Ảnh vệ tinh:",cr3:"Chỉ đường và bản đồ nhúng:",cr4:"Thư viện bản đồ:",cr5:"Thời tiết:",cr6:"Phông chữ:",crNote:"Biểu tượng món ăn là emoji có sẵn của thiết bị. Web không dùng ảnh hay âm thanh từ bên thứ ba.",nav1:"Quán ăn",nav2:"Hôm nay ăn gì?",nav5:"Theo buổi",nav4:"Bản đồ",thL:"☀️ Sáng",thD:"🌙 Tối",
+h1:"Có những món ăn xứng đáng để bạn đi xa hơn một chút.",sub:"Khám phá hương vị đặc trưng của Sài Gòn, tìm những quán ăn đáng thử và chọn món phù hợp với khẩu vị của bạn.",tag:"Khám phá món ngon. Tìm đúng quán. Ăn đúng gu.",cta1:"Khám phá ngay",cta2:"Hôm nay ăn gì?",
+aiT:"Bạn đang thèm món gì?",aiD:"Gõ món, khu vực hoặc điều kiện. Ví dụ: “bún bò Bình Tân”, “lẩu quận 3”, “chè đang mở”, “cơm dưới 50k”.",aiL:"Mô tả của bạn",aiB:"Gợi ý",roll:"🎲 Quay số ngẫu nhiên",
+aiNote:"Chỉ hiện quán có tên hoặc món khớp đúng với từ bạn gõ (không đoán bừa). Quán chưa có thông tin giá sẽ bị ẩn khi bạn lọc theo giá.",
+mealT:"Gợi ý món theo buổi",mealD:"Dựa trên giờ mở cửa ghi trong tài liệu của bạn và loại món hợp từng buổi. Quán chưa có giờ cụ thể sẽ không xuất hiện ở đây.",m_morning:"☀️ Sáng",m_noon:"🍚 Trưa",m_afternoon:"🌤️ Chiều",m_evening:"🌙 Tối",now:" · bây giờ",mealWhy:"Giờ mở cửa:",
+listT:"Quán ăn theo khu vực",fq:"Tìm món hoặc quán",fd:"Khu vực",fp:"Mức giá",fs:"Sắp xếp",s1:"Tên A–Z (khi tìm: khớp nhất trước)",s3:"Gần nhất",p1:"Tối đa 50.000đ",p2:"Tối đa 100.000đ",p3:"Từ 100.000đ trở lên",fo:"Đang mở cửa",near:"📍 Quán gần tôi nhất",clr:"Xóa bộ lọc",more:"Xem thêm",
+cnt:n=>`${n} quán`,none:"Không có quán nào khớp. Hãy thử từ khác hoặc bỏ bớt bộ lọc.",
+mapNote:"Bản đồ Google Maps hiển thị đúng theo địa chỉ trong tài liệu: chọn một quán ở danh sách bên trái để xem vị trí và chỉ đường. Ở chế độ “📍 Xem tất cả ghim”, bạn có thể xem toàn bộ quán hoặc bấm trực tiếp lên bản đồ để chọn vị trí tính khoảng cách gần nhất.",
+foot:"Foodie Map · Khám phá món ngon Sài Gòn. Thông tin quán (địa chỉ, giá, giờ mở cửa) theo tài liệu biên soạn; vui lòng kiểm tra lại với quán trước khi đến. Xem mục “Giới thiệu & ghi nhận” về nguồn dữ liệu, bản quyền và việc dùng AI.",
+src:n=>`Danh sách gồm ${n} quán do bạn biên soạn. Thông tin nào tài liệu chưa có sẽ hiển thị “Chưa có thông tin”.`,
+area:a=>a,dir:"Chỉ đường",onmap:"Bản đồ",inlineMap:"Map tại chỗ",detail:"Chi tiết",close:"Đóng",gmaps:"Mở Google Maps",allArea:"🗺️ Toàn khu vực",pickHint:"Chọn một quán ở danh sách bên trái để xem Google Maps chi tiết",
+pinsMode:"📍 Xem tất cả ghim",embedMode:"🗺️ Google Maps trực tiếp",satOn:"🛰️ Vệ tinh",roadOn:"🗺️ Bản đồ",nomap:"Không tải được bản đồ (cần kết nối mạng).",
+open:"Đang mở",closed:"Đã đóng",price:"Giá",hours:"Giờ mở cửa",best:"Món đặc trưng",about:"Giới thiệu",noPrice:"Chưa có thông tin giá",noHours:"Chưa có thông tin giờ mở cửa",under:"Dưới",dishes:"Món",crowd:"Lưu ý",
+nearErr:"Không lấy được GPS tự động — đã chuyển sang vị trí mặc định. Bạn có thể chọn khu vực đang đứng hoặc chấm trực tiếp trên bản đồ!",here:"Vị trí của bạn (kéo hoặc chấm bản đồ để đổi)",nearNote:"cách bạn",locWait:"⏳ Đang xác định vị trí GPS…",locCur:s=>`📍 Vị trí tính khoảng cách: <b>${s}</b>`,locGpsBtn:"🎯 Lấy GPS hiện tại",locPresetPh:"📌 Đổi vị trí theo khu vực / địa điểm…",locPickBtn:"🖱️ Chấm trên bản đồ",locPicking:"🖱️ Hãy bấm vào bản đồ bên dưới…",locOffBtn:"✕ Tắt gần nhất",locGpsOk:"Vị trí GPS của bạn",locMapPin:"Điểm đã chấm trên bản đồ",closest:"🏆 Gần nhất",
+ctxH:w=>`Gợi ý theo thời tiết${w!=null?` (${w}°C)`:""}:`,c_rain:"🌧️ Trời mưa: lẩu, phở, bún, bánh canh, cháo",c_hot:"🥵 Trời nóng: chè, trái cây",
+rollWhy:"Hôm nay thử quán này!",
+iFor:"Hiểu là",iDish:"món/quán",iOpen:"đang mở",iMaxP:n=>`giá tối đa ${n}`,iMinP:n=>`giá từ ${n}`,iMeal:{morning:"buổi sáng",noon:"buổi trưa",afternoon:"buổi chiều",evening:"buổi tối"},iCat:{snack:"ăn vặt",sweet:"tráng miệng"},iNear:"gần bạn",
+mName:"Khớp tên quán",mTag:"Món",mAddr:"Khớp địa chỉ",
+aiNone:"Không tìm thấy quán nào khớp với yêu cầu này trong danh sách. Hãy thử gõ tên món ngắn gọn hơn (ví dụ: “phở”, “ốc”, “chè”).",
+aiAreaMiss:a=>`Danh sách chưa có quán nào ở ${a}.`,
+aiElsewhere:(d,a)=>`Không có quán “${d}” ở ${a}. Các quán khác có món này:`,
+aiRelaxed:(f,u)=>`Không có quán khớp đầy đủ “${f}”. Dưới đây là quán khớp “${u}” — hãy kiểm tra xem có đúng món bạn muốn không:`,
+aiEmpty:"Hãy nhập món, tên quán hoặc khu vực bạn muốn tìm.",seeAll:n=>`Xem tất cả ${n} quán trong danh sách`,aiShown:(a,b)=>`Hiển thị ${a}/${b} quán`},
+en:{nav6:"About",abT:"About & credits",abD:"Foodie Map is a student team project that helps residents and visitors find places to eat across Ho Chi Minh City.",abAIt:"Use of AI",abAI:"The team used AI (Claude by Anthropic) to help write and fix source code, check data errors and edit content. The team is responsible for the final content. The “What are you craving?” box is a keyword filter that runs in your browser and does not call any AI model.",abDt:"Data sources",abDat:"Place information (name, address, price, opening hours, description) was compiled by the team in a reference document. Where price or hours are missing, the site says “no information” rather than guessing. The Google Maps buttons let you check the real address.",abAddr:"Addresses use the district/ward names found in the source document; Ho Chi Minh City’s administrative units may have changed, so please double-check on arrival.",abCt:"Tools and copyright",cr1:"Base map:",cr2:"Satellite imagery:",cr3:"Directions and embedded map:",cr4:"Map library:",cr5:"Weather:",cr6:"Fonts:",crNote:"Food icons are the device’s built-in emoji. The site uses no third-party images or audio.",nav1:"Restaurants",nav2:"What to eat?",nav5:"By time",nav4:"Map",thL:"☀️ Light",thD:"🌙 Dark",
+h1:"Some dishes are worth going a little further for.",sub:"Explore the flavors of Saigon, find places worth trying and pick dishes that suit your taste.",tag:"Discover Great Food. Find Your Next Favorite.",cta1:"Explore now",cta2:"What to eat today?",
+aiT:"What are you craving?",aiD:"Type a dish, area or condition. Examples: “bún bò Bình Tân”, “hot pot district 3”, “chè open now”, “cơm under 50k”.",aiL:"Your request",aiB:"Suggest",roll:"🎲 Random spin",
+aiNote:"Only places whose name or dishes exactly match your words are shown (no guessing). Places without price info are hidden when you filter by price.",
+mealT:"Meal suggestions by time",mealD:"Based on opening hours in your document and dish types that suit each time of day. Places without specific hours are not listed here.",m_morning:"☀️ Morning",m_noon:"🍚 Lunch",m_afternoon:"🌤️ Afternoon",m_evening:"🌙 Evening",now:" · now",mealWhy:"Opening hours:",
+listT:"Restaurants by area",fq:"Search dish or place",fd:"Area",fp:"Price",fs:"Sort",s1:"Name A–Z (when searching: best match first)",s3:"Nearest",p1:"Up to 50,000đ",p2:"Up to 100,000đ",p3:"From 100,000đ",fo:"Open now",near:"📍 Nearest to me",clr:"Clear filters",more:"Show more",
+cnt:n=>`${n} places`,none:"No matching places. Try another word or remove a filter.",
+mapNote:"Google Maps follows the addresses in your document: pick a place in the left list to see its location and directions. In “📍 View all pins” mode, you can view all pins or click anywhere on the map to set your location for nearest search.",
+foot:"Foodie Map · Discover Saigon's best eats. Place info (address, price, opening hours) follows the compiled document; please confirm with the restaurant before visiting. See “About & credits” for data sources, copyright and AI use.",
+src:n=>`The list has ${n} places compiled by you. Anything missing in the document is shown as “No information”.`,
+area:a=>a.replace("Quận Thủ Đức","Thu Duc").replace("Quận Tân Bình","Tan Binh").replace("Quận Tân Phú","Tan Phu").replace("Quận Bình Tân","Binh Tan").replace("Quận Bình Thạnh","Binh Thanh").replace("Quận Gò Vấp","Go Vap").replace("Quận Phú Nhuận","Phu Nhuan").replace("Quận ","District "),
+dir:"Directions",onmap:"Map",inlineMap:"Inline Map",detail:"Details",close:"Close",gmaps:"Open Google Maps",allArea:"🗺️ Whole area",pickHint:"Select a place on the left to view it on Google Maps",
+pinsMode:"📍 View all pins",embedMode:"🗺️ Live Google Maps",satOn:"🛰️ Satellite",roadOn:"🗺️ Map",nomap:"Map could not load (internet required).",
+open:"Open",closed:"Closed",price:"Price",hours:"Opening hours",best:"Signature dishes",about:"About",noPrice:"No price info",noHours:"No opening-hours info",under:"Under",dishes:"Dishes",crowd:"Note",
+nearErr:"Could not get live GPS — using selected location. Pick your area or click on the map below!",here:"Your location (drag or click map to move)",nearNote:"away",locWait:"⏳ Getting GPS location…",locCur:s=>`📍 Distance from: <b>${s}</b>`,locGpsBtn:"🎯 Use live GPS",locPresetPh:"📌 Set location by landmark / district…",locPickBtn:"🖱️ Click on map",locPicking:"🖱️ Click anywhere on the map below…",locOffBtn:"✕ Clear nearest",locGpsOk:"Your GPS location",locMapPin:"Pinned on map",closest:"🏆 Closest",
+ctxH:w=>`Suggestions for the weather${w!=null?` (${w}°C)`:""}:`,c_rain:"🌧️ Rainy: hot pot, pho, noodles, soups",c_hot:"🥵 Hot: sweet soups, fruit",
+rollWhy:"Try this place today!",
+iFor:"Understood as",iDish:"dish/place",iOpen:"open now",iMaxP:n=>`max price ${n}`,iMinP:n=>`price from ${n}`,iMeal:{morning:"morning",noon:"lunch",afternoon:"afternoon",evening:"evening"},iCat:{snack:"snacks",sweet:"dessert"},iNear:"near you",
+mName:"Name matches",mTag:"Dish",mAddr:"Address matches",
+aiNone:"No place in the list matches this request. Try a shorter dish name (e.g. “phở”, “ốc”, “chè”).",
+aiAreaMiss:a=>`The list has no places in ${a}.`,
+aiElsewhere:(d,a)=>`No “${d}” place in ${a}. Other places with this dish:`,
+aiRelaxed:(f,u)=>`No place matches “${f}” fully. Showing places matching “${u}” — please check it is what you want:`,
+aiEmpty:"Type a dish, a place name or an area.",seeAll:n=>`See all ${n} places in the list`,aiShown:(a,b)=>`Showing ${a}/${b} places`}};
+const t=k=>T[lang][k];
+
+/* ---------- định dạng ---------- */
+const money=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,".");
+const priceTxt=x=>!x.p?t("noPrice"):x.p[0]===0?`${t("under")} ${money(x.p[1])}đ`:`${money(x.p[0])}đ – ${money(x.p[1])}đ`;
+const tagsTxt=(x,n)=>x.t.map(s=>s.replace(/~/g," ")).slice(0,n||99).join(" · ");
+const mq=x=>{let a=x.ad.split(/\s+hoặc\s+/)[0];if(!/hồ chí minh|hcm/i.test(a))a+=", TP.HCM";return a};
+const qOf=x=>`${x.n}, ${mq(x)}`;
+const gLink=x=>x.k||`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(qOf(x))}`;
+const badge=x=>{const o=isOpen(x);return o===null?"":` <span class="st ${o?"on":"off"}">${o?t("open"):t("closed")}</span>`};
+let me=null,meLabel="",locBusy=false,pickMapMode=false;
+const C={"Quận 1":[10.7769,106.7009],"Quận 2":[10.795,106.738],"Quận 3":[10.778,106.683],"Quận 4":[10.759,106.705],"Quận 5":[10.756,106.670],"Quận 6":[10.747,106.638],"Quận 7":[10.734,106.715],"Quận 8":[10.738,106.662],"Quận 9":[10.843,106.795],"Quận 10":[10.768,106.667],"Quận 11":[10.761,106.651],"Quận 12":[10.856,106.654],"Quận Bình Thạnh":[10.808,106.706],"Quận Gò Vấp":[10.832,106.666],"Quận Phú Nhuận":[10.797,106.682],"Quận Tân Bình":[10.793,106.648],"Quận Tân Phú":[10.788,106.630],"Quận Bình Tân":[10.760,106.610],"Quận Thủ Đức":[10.852,106.758]};
+const LANDMARKS=[
+  {id:"bt",vi:"Chợ Bến Thành (Quận 1)",en:"Ben Thanh Market (Dist. 1)",pos:[10.7725,106.6980]},
+  {id:"nh",vi:"Phố đi bộ Nguyễn Huệ (Quận 1)",en:"Nguyen Hue Walking St (Dist. 1)",pos:[10.7744,106.7035]},
+  {id:"hcr",vi:"Hồ Con Rùa (Quận 3)",en:"Turtle Lake (Dist. 3)",pos:[10.7827,106.6959]},
+  {id:"pxl",vi:"Phố ẩm thực Phan Xích Long (Phú Nhuận)",en:"Phan Xich Long Food St (Phu Nhuan)",pos:[10.7975,106.6895]},
+  {id:"hx",vi:"Ngã tư Hàng Xanh (Bình Thạnh)",en:"Hang Xanh Junction (Binh Thanh)",pos:[10.8014,106.7114]},
+  {id:"tsn",vi:"Sân bay Tân Sơn Nhất (Tân Bình)",en:"Tan Son Nhat Airport (Tan Binh)",pos:[10.8132,106.6625]},
+  {id:"vanhanh",vi:"Vạn Hạnh Mall (Quận 10)",en:"Van Hanh Mall (Dist. 10)",pos:[10.7704,106.6699]},
+  {id:"cholon",vi:"Chợ Lớn – Bình Tây (Quận 5 / Quận 6)",en:"Cho Lon Market (Dist. 5 / 6)",pos:[10.7518,106.6548]},
+  {id:"pmh",vi:"Phú Mỹ Hưng – Hồ Bán Nguyệt (Quận 7)",en:"Phu My Hung (Dist. 7)",pos:[10.7292,106.7195]},
+  {id:"thaodien",vi:"Thảo Điền (Quận 2)",en:"Thao Dien (Dist. 2)",pos:[10.8018,106.7385]},
+  {id:"ngatuthuduc",vi:"Ngã tư Thủ Đức (Thủ Đức / Quận 9)",en:"Thu Duc Intersection",pos:[10.8485,106.7718]},
+  {id:"aeontp",vi:"AEON Mall Tân Phú (Tân Phú)",en:"AEON Mall Tan Phu",pos:[10.8016,106.6174]},
+  {id:"aeonbt",vi:"AEON Mall Bình Tân (Bình Tân)",en:"AEON Mall Binh Tan",pos:[10.7428,106.6119]},
+  {id:"emartgv",vi:"Emart Phan Văn Trị (Gò Vấp)",en:"Emart Go Vap",pos:[10.8232,106.6922]}
+];
+DATA.forEach(x=>{if(!x.pos){const b=C[x.a]||C["Quận 1"];x.pos=[b[0]+((x.id*37%100)-50)/100*.012,b[1]+((x.id*53%100)-50)/100*.012]}});
+const rad=q=>q*Math.PI/180;
+function dist(a,b){const dl=rad(b[0]-a[0]),dn=rad(b[1]-a[1]),k=Math.sin(dl/2)**2+Math.cos(rad(a[0]))*Math.cos(rad(b[0]))*Math.sin(dn/2)**2;return 12742*Math.asin(Math.sqrt(k))}
+const fmtDist=d=>d<1?`${Math.max(50,Math.round(d*1000))} m`:`${d.toFixed(1)} km`;
+const distStr=(x,isFirst)=>x.dist!=null?` · 📍 ${fmtDist(x.dist)} (${t("nearNote")})${isFirst?`<span class="near-badge">${t("closest")}</span>`:""}`:"";
+
+let shown=12,mealShown=6,ctx=null,curId=null,map=null,layer=null,meM=null,mkr={},toastTm,W={},inlineMapIds=new Set(),gmode="embed",gdirMode=false,lastEmbedUrl="",base=null,mode="road",selId=null;
+function showToast(m){const el=$("toast");if(!el)return;el.textContent=m;clearTimeout(toastTm);toastTm=setTimeout(()=>{el.textContent=""},3500)}
+
+/* ---------- thẻ quán ---------- */
+function card(x,why,isFirst){const m=encodeURIComponent(qOf(x)),inMap=inlineMapIds.has(x.id);
+return `<article class="card" data-d="${x.id}" tabindex="0"><h3>${x.icon} ${esc(x.n)}</h3><div class="meta">${esc(t("area")(x.a))}${distStr(x,isFirst)}</div><div class="meta">📍 ${esc(x.ad)}</div>
+${x.d?`<div class="desc">${esc(x.d)}</div>`:""}${x.t.length?`<div class="meta"><b>${t("dishes")}:</b> ${esc(tagsTxt(x,5))}</div>`:""}
+<div class="meta">💰 ${priceTxt(x)}</div><div class="meta">🕒 ${esc(x.h||t("noHours"))}${badge(x)}</div>${x.x?`<div class="meta">👥 ${esc(x.x)}</div>`:""}${why?`<div class="meta why">${why}</div>`:""}
+${inMap?`<div class="cmap"><iframe src="${gmapEmbedSrc(x,false)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen title="Google Maps - ${esc(x.n)}"></iframe></div>`:""}
+<div class="row"><button data-inline-map="${x.id}" aria-pressed="${inMap}">🗺️ ${t("inlineMap")}</button><button data-map="${x.id}">📍 ${t("onmap")}</button><button data-dir="${x.id}">🧭 ${t("dir")}</button><a href="${esc(gLink(x))}" target="_blank" rel="noopener" title="${t("gmaps")}" aria-label="${t("gmaps")}">↗</a></div></article>`}
+const whyOf=r=>r.why==="tag"?`${t("mTag")}: “${esc(r.tag.replace(/~/g," "))}”`:r.why==="name"?t("mName"):r.why==="addr"?t("mAddr"):"";
+
+/* ---------- bản đồ nhúng ---------- */
+function gmapEmbedSrc(x,dirOn){const tp=mode==="sat"?"k":"m";
+  if(x){const dest=encodeURIComponent(qOf(x));
+    if(dirOn&&me)return `https://maps.google.com/maps?saddr=${me[0]},${me[1]}&daddr=${dest}&hl=${lang}&t=${tp}&z=15&ie=UTF8&output=embed`;
+    return `https://maps.google.com/maps?q=${dest}&hl=${lang}&t=${tp}&z=16&ie=UTF8&iwloc=&output=embed`}
+  const I=parseQuery($("q").value,KNOWN),dq=I.area||$("d").value,sq=I.qs||(lang==="en"?"Vietnamese restaurants":"Quán ăn");
+  return `https://maps.google.com/maps?q=${encodeURIComponent(sq+" "+(dq||"TP.HCM"))}&hl=${lang}&t=${tp}&z=${dq?14:12}&ie=UTF8&iwloc=&output=embed`}
+const dirUrl=x=>`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(qOf(x))}${me?`&origin=${me[0]},${me[1]}`:""}`;
+const PIN=(c,w)=>`<svg width="${w}" height="${Math.round(w*1.4)}" viewBox="0 0 24 34" aria-hidden="true"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="${c}" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="4.5" fill="#7a1c14"/></svg>`;
+const pinIcon=sel=>{const w=sel?34:24;return L.divIcon({className:"gpin",html:PIN(sel?"#C5221F":"#EA4335",w),iconSize:[w,Math.round(w*1.4)],iconAnchor:[w/2,Math.round(w*1.4)],popupAnchor:[0,-Math.round(w*1.4)+4]})};
+function tiles(){return mode==="sat"?["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles © Esri — Esri, Maxar, Earthstar Geographics"}]:["https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}]}
+function updateGmapEmbed(){const x=selId!=null?DATA.find(o=>o.id===selId):null,url=gmapEmbedSrc(x,gdirMode);
+  if(url!==lastEmbedUrl){$("gmap").src=url;lastEmbedUrl=url}
+  if(x){$("gmapbar").innerHTML=`<div class="gmapbar-info"><b>${x.icon} ${esc(x.n)}</b><span>${esc(t("area")(x.a))}</span>${badge(x)}</div><div class="gmapbar-actions"><button data-gdir="${x.id}" aria-pressed="${gdirMode}">🧭 ${t("dir")}</button><button data-detail="${x.id}">${t("detail")}</button><button data-garea>${t("allArea")}</button><a href="${esc(dirUrl(x))}" target="_blank" rel="noopener" aria-label="${t("gmaps")}">↗</a></div>`}
+  else{const I=parseQuery($("q").value,KNOWN),dq=I.area||$("d").value;$("gmapbar").innerHTML=`<div class="gmapbar-info"><b>🗺️ Google Maps · ${dq?esc(t("area")(dq)):(lang==="en"?"HCMC":"TP.HCM")}</b><span>${t("pickHint")}</span></div>`}}
+function lyrLbl(){$("lyr").textContent=t(mode==="road"?"satOn":"roadOn");$("vmode").textContent=gmode==="embed"?t("pinsMode"):t("embedMode");$("vmode").setAttribute("aria-pressed",gmode==="embed");$("mapbox").classList.toggle("pins-mode",gmode==="pins")}
+function setTiles(){lyrLbl();updateGmapEmbed();if(!map)return;$("map").classList.toggle("inv",mode==="road");if(base)map.removeLayer(base);const[u,o]=tiles();base=L.tileLayer(u,o).addTo(map);base.bringToBack()}
+function initMap(){lyrLbl();updateGmapEmbed();if(typeof L==="undefined"){$("map").innerHTML=`<div class="empty">${t("nomap")}</div>`;return}
+  map=L.map("map",{zoomControl:false}).setView([10.78,106.69],12);L.control.zoom({position:"bottomright"}).addTo(map);setTiles();layer=L.layerGroup().addTo(map);
+  map.on("click",e=>{if(pickMapMode||$("s").value==="d"){pickMapMode=false;$("loc-pick").setAttribute("aria-pressed","false");setMe([e.latlng.lat,e.latlng.lng], `${t("locMapPin")} (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})`, true)}});
+  $("lyr").onclick=()=>{mode=mode==="road"?"sat":"road";setTiles()};
+  $("vmode").onclick=()=>{gmode=gmode==="embed"?"pins":"embed";lyrLbl();if(gmode==="pins"&&map)setTimeout(()=>map.invalidateSize(),80)};
+  $("loc").onclick=()=>$("near").click();setTimeout(()=>map.invalidateSize(),200)}
+function popupHtml(x){return `<div class="gp"><b>${esc(x.n)}</b><div>${esc(t("area")(x.a))}</div><div>📍 ${esc(x.ad)}</div><div>${priceTxt(x)}${badge(x)}</div><div class="gpr"><button data-map="${x.id}">🗺️ Google Map</button><button data-detail="${x.id}">${t("detail")}</button></div></div>`}
+function mkMarker(x){return L.marker(x.pos,{icon:pinIcon(x.id===selId),title:x.n}).bindPopup(popupHtml(x)).on("click",()=>selectPin(x.id,true))}
+function selectPin(id,fromPin){if(selId!=null&&mkr[selId])mkr[selId].setIcon(pinIcon(false));selId=id;if(mkr[id])mkr[id].setIcon(pinIcon(true));
+  document.querySelectorAll(".mi").forEach(b=>{const on=+b.dataset.mf===id;b.classList.toggle("on",on);if(on&&fromPin)b.scrollIntoView({block:"nearest"})});updateGmapEmbed()}
+function syncMeMarker(){if(!map)return;if(meM){meM.remove();meM=null}
+  if(me){const uIcon=L.divIcon({className:"gpin",html:`<svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11" fill="#1a73e8" fill-opacity="0.22"/><circle cx="13" cy="13" r="6" fill="#1a73e8" stroke="#fff" stroke-width="2.5"/></svg>`,iconSize:[26,26],iconAnchor:[13,13]});
+    meM=L.marker(me,{icon:uIcon,draggable:true,title:t("here")}).addTo(map).bindPopup(`<b>📍 ${esc(meLabel||t("here"))}</b><br><span class="meta">${esc(t("here"))}</span>`);
+    meM.on("dragend",e=>{const p=e.target.getLatLng();setMe([p.lat,p.lng],`${t("locMapPin")} (${p.lat.toFixed(4)}, ${p.lng.toFixed(4)})`,true)})}}
+function mapUpdate(a){if(selId!=null&&!a.some(x=>x.id===selId))selId=null;
+  const isNear=$("s").value==="d"&&me;
+  $("mlist").innerHTML=a.length?a.map((x,i)=>`<button class="mi${x.id===selId?" on":""}" data-mf="${x.id}"><b>${isNear&&i===0?"🏆 ":""}${esc(x.n)}</b><span class="meta">${esc(t("area")(x.a))}${x.dist!=null?` · 📍 ${fmtDist(x.dist)}`:""}${badge(x)}</span></button>`).join(""):`<div class="empty" style="margin:12px">${t("none")}</div>`;
+  updateGmapEmbed();if(!map)return;layer.clearLayers();mkr={};a.forEach(x=>{mkr[x.id]=mkMarker(x).addTo(layer)});syncMeMarker();
+  const pts=isNear&&a.length?[me,...a.slice(0,5).map(x=>x.pos)]:a.map(x=>x.pos);
+  if(pts.length>1)map.fitBounds(pts,{padding:[34,34],maxZoom:15});else if(pts.length===1)map.setView(pts[0],15)}
+function focusMap(id,quiet,dir){const x=DATA.find(o=>o.id===id);if(!x)return;gdirMode=!!dir;gmode="embed";lyrLbl();if(!quiet)$("mapbox").scrollIntoView({behavior:"smooth",block:"center"});selectPin(id,true);
+  if(dir&&!me&&navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{me=[p.coords.latitude,p.coords.longitude];updateGmapEmbed()},()=>{},{timeout:6000});
+  if(map){let m=mkr[id];if(!m){m=mkMarker(x).addTo(layer);mkr[id]=m}map.setView(x.pos,15);}}
+
+/* ---------- danh sách + tìm kiếm ---------- */
+function effective(){const I=parseQuery($("q").value,KNOWN),E={...I,area:I.area||$("d").value||null},pv=$("p").value;
+  if(pv==="1")E.maxP=Math.min(E.maxP??1e12,50000);if(pv==="2")E.maxP=Math.min(E.maxP??1e12,100000);if(pv==="3")E.minP=Math.max(E.minP??0,100000);
+  if($("o").checked)E.open=true;if($("s").value==="d")E.near=true;return E}
+function sortRows(rows,E,hasQ){const nm=(p,q)=>p.x.n.localeCompare(q.x.n,"vi");
+  return rows.sort((p,q)=>(E.near&&me?p.x.dist-q.x.dist:0)||(hasQ?q.s-p.s:0)||nm(p,q))}
+function updateDistances(){DATA.forEach(x=>{x.dist=me?dist(me,x.pos):null})}
+function setMe(pos,label,focusFirst){
+  me=pos;meLabel=label||t("locGpsOk");locBusy=false;$("s").value="d";shown=12;
+  updateDistances();render();
+  const{rows}=listRows();
+  if(focusFirst&&rows.length){selId=rows[0].x.id;updateGmapEmbed();
+    document.querySelectorAll(".mi").forEach(b=>b.classList.toggle("on",+b.dataset.mf===selId))}
+}
+function fallbackLoc(showMsg){
+  locBusy=false;
+  const area=$("d").value;
+  if(area&&C[area]){setMe([...C[area]],t("area")(area),true)}
+  else if(!me){const d0=LANDMARKS[0];setMe([...d0.pos],lang==="en"?d0.en:d0.vi,true)}
+  else{render()}
+  if(showMsg)showToast(t("nearErr"));
+}
+function requestLoc(forceGps){
+  if(locBusy)return;
+  if(!navigator.geolocation){fallbackLoc(true);return}
+  locBusy=true;renderLocBar();
+  const onOk=p=>{locBusy=false;$("loc-preset").value="";setMe([p.coords.latitude,p.coords.longitude],`${t("locGpsOk")} (${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)})`,true)};
+  const onErr=()=>{navigator.geolocation.getCurrentPosition(onOk,()=>fallbackLoc(true),{enableHighAccuracy:false,timeout:6000,maximumAge:300000})};
+  navigator.geolocation.getCurrentPosition(onOk,onErr,{enableHighAccuracy:true,timeout:5000,maximumAge:forceGps?0:60000});
+}
+function renderLocBar(){
+  const E=effective(),on=E.near||me!=null||pickMapMode;
+  $("locbar").classList.toggle("on",on);
+  $("near").setAttribute("aria-pressed",E.near?"true":"false");
+  if(!on)return;
+  $("loc-status").innerHTML=locBusy?t("locWait"):t("locCur")(esc(meLabel||t("locGpsOk")));
+  $("loc-gps").textContent=t("locGpsBtn");
+  $("loc-pick").textContent=pickMapMode?t("locPicking"):t("locPickBtn");
+  $("loc-pick").setAttribute("aria-pressed",pickMapMode?"true":"false");
+  $("loc-off").textContent=t("locOffBtn");
+}
+function populateLocPresets(){
+  const sel=$("loc-preset"),cur=sel.value;
+  const lmOpts=LANDMARKS.map(l=>`<option value="lm:${l.id}">📍 ${esc(lang==="en"?l.en:l.vi)}</option>`).join("");
+  const arOpts=AREA_LIST.map(a=>`<option value="ar:${esc(a)}">🏙️ ${esc(t("area")(a))}</option>`).join("");
+  sel.innerHTML=`<option value="">${t("locPresetPh")}</option><optgroup label="${lang==="en"?"Popular landmarks":"Địa điểm phổ biến"}">${lmOpts}</optgroup><optgroup label="${lang==="en"?"District centers":"Trung tâm Quận"}">${arOpts}</optgroup>`;
+  sel.value=cur;
+}
+function listRows(){const E=effective();updateDistances();
+  let rows=E.areaMiss?[]:runSearch(E,{area:E.area,qt:E.qt,pref:true});if(ctx)rows=rows.filter(r=>r.x.ctx[ctx.k]);
+  return{E,rows:sortRows(rows,E,E.qt.length>0)}}
+function describe(E){const p=[];if(E.qs)p.push(`${t("iDish")}: “${esc(E.qs)}”`);if(E.area||E.areaMiss)p.push(esc(t("area")(E.area||E.areaMiss)));if(E.cat)p.push(t("iCat")[E.cat]);if(E.meal)p.push(t("iMeal")[E.meal]);if(E.open)p.push(t("iOpen"));
+  if(E.maxP!=null)p.push(t("iMaxP")(money(E.maxP)+"đ"));if(E.minP!=null)p.push(t("iMinP")(money(E.minP)+"đ"));if(E.near)p.push(t("iNear")+(meLabel?` (${esc(meLabel)})`:""));return p}
+function render(){const{E,rows}=listRows();if(E.near&&!me&&!locBusy)requestLoc(false);
+  renderLocBar();
+  $("count").textContent=t("cnt")(rows.length);
+  const d=describe(E);$("interp").innerHTML=(E.qt.length||d.length>(E.qs?1:0))&&d.length?`${t("iFor")}: ${d.map(s=>`<span class="ichip">${s}</span>`).join(" ")}`:"";
+  $("notice-miss").textContent=E.areaMiss?t("aiAreaMiss")(E.areaMiss):"";
+  const isNear=E.near&&me!=null;
+  $("grid").innerHTML=rows.length?rows.slice(0,shown).map((r,i)=>card(r.x,r.s>1?whyOf(r):"",isNear&&i===0)).join(""):`<div class="empty">${t("none")}</div>`;
+  $("more").style.display=rows.length>shown?"":"none";mapUpdate(rows.map(r=>r.x));renderMeal()}
+function i18n(){document.documentElement.lang=lang;document.querySelectorAll("[data-t]").forEach(e=>{const v=t(e.dataset.t);if(typeof v==="string")e.textContent=v});
+  $("src").textContent=t("src")(DATA.length);
+  const cur=$("d").value;$("d").innerHTML=`<option value="">—</option>`+AREA_LIST.map(a=>`<option value="${esc(a)}">${esc(t("area")(a))}</option>`).join("");$("d").value=cur;
+  const pc=$("p").value;$("p").innerHTML=`<option value="0">—</option><option value="1">${t("p1")}</option><option value="2">${t("p2")}</option><option value="3">${t("p3")}</option>`;$("p").value=pc;
+  const sc=$("s").value;$("s").innerHTML=`<option value="n">${t("s1")}</option><option value="d">${t("s3")}</option>`;$("s").value=sc;populateLocPresets();
+  document.querySelectorAll("[data-l]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===lang));
+  $("q").placeholder=lang==="vi"?"phở, ốc, bún bò quận 5…":"pho, snails, bún bò district 5…";$("aiq").placeholder=lang==="vi"?"Tôi muốn ăn bún bò gần Bình Tân":"I want bún bò near Binh Tan";
+  $("aiout").innerHTML="";setTiles();renderCtx();render();if(curId&&$("dlg").open)fillDetail(curId)}
+
+/* ---------- gợi ý (hộp “Bạn đang thèm món gì?”) ---------- */
+function ask(){const raw=$("aiq").value.trim();if(!raw){showToast(t("aiEmpty"));return}
+  const I=parseQuery(raw,KNOWN);if(I.near&&!me&&!locBusy)requestLoc(false);updateDistances();
+  const note=`<div class="notice">${t("aiNote")}</div>`,head=(extra)=>{const d=describe(I);return `<p class="interp">${t("iFor")}: ${d.map(s=>`<span class="ichip">${s}</span>`).join(" ")||"—"}</p>${extra?`<p>${extra}</p>`:""}`};
+  const out=h=>{$("aiout").innerHTML=note+h};
+  if(I.areaMiss){out(head()+`<div class="empty">${t("aiAreaMiss")(I.areaMiss)}</div>`);return}
+  const nothing=!I.qt.length&&!I.area&&!I.cat&&!I.meal&&!I.open&&I.maxP==null&&I.minP==null&&!I.near;
+  if(nothing){out(`<div class="empty">${t("aiNone")}</div>`);return}
+  let rows=runSearch(I,{area:I.area,qt:I.qt,pref:false}),msg="";
+  if(!rows.length&&I.area&&I.qt.length){const alt=runSearch(I,{area:null,qt:I.qt,pref:false});if(alt.length){rows=alt;msg=t("aiElsewhere")(I.qs,t("area")(I.area))}}
+  if(!rows.length&&I.qt.length>1){const tries=[I.qt.slice(0,-1),I.qt.slice(1)];for(const q of tries){const alt=runSearch(I,{area:I.area,qt:q,pref:false});if(alt.length){rows=alt;msg=t("aiRelaxed")(I.qs,q.map(z=>z.raw.replace(/~/g," ")).join(" "));break}}}
+  if(!rows.length){out(head()+`<div class="empty">${t("aiNone")}</div>`);return}
+  sortRows(rows,I,I.qt.length>0);const top=rows.slice(0,6);
+  out(head(msg)+`<p class="meta" style="color:inherit">${t("aiShown")(top.length,rows.length)}</p><div class="grid">${top.map(r=>card(r.x,whyOf(r))).join("")}</div>`+(rows.length>6&&!msg?`<p><button class="btn" style="background:var(--gold);color:#252722" data-seeall>${t("seeAll")(rows.length)}</button></p>`:""))}
+
+/* ---------- chi tiết ---------- */
+function fillDetail(id){const x=DATA.find(o=>o.id===id);if(!x)return;
+  $("dbody").innerHTML=`<div class="dhero" aria-hidden="true">${x.icon}</div><h2>${esc(x.n)}</h2><p class="meta">${esc(t("area")(x.a))}</p><div class="meta">📍 ${esc(x.ad)}</div>
+<p><b>${t("price")}:</b> ${priceTxt(x)}<br><b>${t("hours")}:</b> ${esc(x.h||t("noHours"))}${badge(x)}${x.x?`<br><b>${t("crowd")}:</b> ${esc(x.x)}`:""}</p>
+${x.d?`<h3>${t("about")}</h3><p>${esc(x.d)}</p>`:""}${x.t.length?`<h3>${t("best")}</h3><ul>${x.t.map(s=>`<li>${esc(s.replace(/~/g," "))}</li>`).join("")}</ul>`:""}
+<div class="dmap"><iframe src="${gmapEmbedSrc(x,false)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen title="Google Maps - ${esc(x.n)}"></iframe></div>
+<div class="row"><button data-dir="${id}">🧭 ${t("dir")}</button><button data-map="${id}">📍 ${t("onmap")}</button><a href="${esc(gLink(x))}" target="_blank" rel="noopener">↗ ${t("gmaps")}</a><button data-close>${t("close")}</button></div>`}
+function openDetail(id){curId=id;fillDetail(id);if(!$("dlg").open)$("dlg").showModal()}
+
+/* ---------- ngữ cảnh thời tiết ---------- */
+function renderCtx(){const ks=[...(W.rain?["rain"]:[]),...(W.hot?["hot"]:[])];
+  $("ctx").innerHTML=ks.length?`<p style="margin:0">${t("ctxH")(W.tmp)}</p><div class="chips">${ks.map(k=>`<button class="chip" data-ctx="${k}" aria-pressed="${!!ctx&&ctx.k===k}">${t("c_"+k)}</button>`).join("")}</div>`:""}
+async function initCtx(){try{const j=(await(await fetch("https://api.open-meteo.com/v1/forecast?latitude=10.78&longitude=106.70&current=temperature_2m,precipitation,weather_code")).json()).current;
+  W={tmp:Math.round(j.temperature_2m),rain:j.precipitation>0||(j.weather_code>=51&&j.weather_code<=67)||j.weather_code>=80,hot:j.temperature_2m>=33};renderCtx()}catch(e){}}
+
+/* ---------- theo buổi ---------- */
+const nowMeal=()=>{const h=vnNow().h;return h>=5&&h<10?"morning":h>=10&&h<14?"noon":h>=14&&h<18?"afternoon":"evening"};
+let meal=nowMeal();
+function renderMeal(){const nm=nowMeal(),now=vnNow();
+  $("mtabs").innerHTML=Object.keys(MEALW).map(k=>`<button class="chip" data-meal="${k}" aria-pressed="${k===meal}">${t("m_"+k)}${k===nm?t("now"):""}</button>`).join("");
+  const r=DATA.filter(x=>MEAL_CATS[meal].includes(x.c)&&opensIn(x,MEALW[meal],now)).sort((p,q)=>(meal===nm?(isOpen(q,now)===true)-(isOpen(p,now)===true):0)||p.n.localeCompare(q.n,"vi"));
+  $("mgrid").innerHTML=r.length?r.slice(0,mealShown).map(x=>card(x,`${t("mealWhy")} ${esc(x.h)}`)).join(""):`<div class="empty">${t("none")}</div>`;
+  $("mmore").style.display=r.length>mealShown?"":"none"}
+
+/* ---------- sự kiện ---------- */
+document.addEventListener("click",e=>{const g=s=>e.target.closest(s);
+  const l=g("[data-l]");if(l){lang=l.dataset.l;try{localStorage.setItem("fm_lang",lang)}catch(x){}i18n();return}
+  const im=g("[data-inline-map]");if(im){const id=+im.dataset.inlineMap;inlineMapIds.has(id)?inlineMapIds.delete(id):inlineMapIds.add(id);render();return}
+  const dr=g("[data-dir]");if(dr){$("dlg").close();focusMap(+dr.dataset.dir,false,true);return}
+  const gd=g("[data-gdir]");if(gd){gdirMode=!gdirMode;if(gdirMode&&!me&&navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{me=[p.coords.latitude,p.coords.longitude];updateGmapEmbed()},()=>updateGmapEmbed(),{timeout:6000})}updateGmapEmbed();return}
+  if(g("[data-garea]")){selId=null;gdirMode=false;document.querySelectorAll(".mi").forEach(b=>b.classList.remove("on"));updateGmapEmbed();return}
+  const mp=g("[data-map]");if(mp){$("dlg").close();focusMap(+mp.dataset.map,false,false);return}
+  const dt=g("[data-detail]");if(dt){openDetail(+dt.dataset.detail);return}
+  if(g("[data-close]")){$("dlg").close();return}
+  const th=g("[data-th]");if(th){setTheme(th.dataset.th,true);return}
+  const mf=g("[data-mf]");if(mf){focusMap(+mf.dataset.mf,true,false);return}
+  const mt=g("[data-meal]");if(mt){meal=mt.dataset.meal;mealShown=6;renderMeal();return}
+  const cx=g("[data-ctx]");if(cx){const k=cx.dataset.ctx;ctx=ctx&&ctx.k===k?null:{k};shown=12;renderCtx();render();if(ctx)$("kham-pha").scrollIntoView({behavior:"smooth"});return}
+  if(g("[data-seeall]")){$("q").value=$("aiq").value;$("d").value="";$("p").value="0";$("o").checked=false;$("s").value="n";shown=12;render();$("kham-pha").scrollIntoView({behavior:"smooth"});return}
+  const c=g("[data-d]");if(c&&!g("a,button,iframe"))openDetail(+c.dataset.d)});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches(".card[data-d]"))openDetail(+e.target.dataset.d)});
+$("dlg").addEventListener("click",e=>{if(e.target===$("dlg"))$("dlg").close()});
+let rt;["q","d","p","s","o"].forEach(id=>$(id).addEventListener(id==="q"?"input":"change",()=>{shown=12;clearTimeout(rt);rt=setTimeout(render,id==="q"?120:0)}));
+$("clr").addEventListener("click",()=>{$("q").value="";$("d").value="";$("p").value="0";$("s").value="n";$("o").checked=false;ctx=null;me=null;meLabel="";pickMapMode=false;shown=12;updateDistances();renderCtx();render()});
+$("more").onclick=()=>{shown+=12;render()};$("mmore").onclick=()=>{mealShown+=6;renderMeal()};
+$("near").onclick=()=>{
+  $("s").value="d";shown=12;
+  if(me){render();const{rows}=listRows();if(rows.length){selId=rows[0].x.id;updateGmapEmbed()}$("locbar").scrollIntoView({behavior:"smooth",block:"nearest"})}
+  else{requestLoc(true)}
+};
+$("loc-gps").onclick=()=>requestLoc(true);
+$("loc-preset").onchange=e=>{
+  const v=e.target.value;if(!v)return;
+  if(v.startsWith("lm:")){const id=v.slice(3),l=LANDMARKS.find(o=>o.id===id);if(l){$("d").value="";setMe([...l.pos],lang==="en"?l.en:l.vi,true)}}
+  else if(v.startsWith("ar:")){const a=v.slice(3);if(C[a]){setMe([...C[a]],t("area")(a),true)}}
+};
+$("loc-pick").onclick=()=>{
+  pickMapMode=!pickMapMode;
+  if(pickMapMode){gmode="pins";lyrLbl();if(map)setTimeout(()=>map.invalidateSize(),80);$("mapbox").scrollIntoView({behavior:"smooth",block:"center"})}
+  renderLocBar();
+};
+$("loc-off").onclick=()=>{me=null;meLabel="";pickMapMode=false;if($("s").value==="d")$("s").value="n";updateDistances();render()};
+$("aigo").onclick=ask;$("aiq").addEventListener("keydown",e=>{if(e.key==="Enter")ask()});
+$("roll").onclick=()=>{const f=listRows().rows.map(r=>r.x),a=f.length?f:DATA,o=$("aiout"),end=Date.now()+1400,b=$("roll");b.disabled=true;
+  const iv=setInterval(()=>{if(Date.now()>end){clearInterval(iv);b.disabled=false;o.innerHTML=`<div class="grid">${card(a[Math.floor(Math.random()*a.length)],t("rollWhy"))}</div>`}else o.innerHTML=`<div class="notice">🎲 ${esc(a[Math.floor(Math.random()*a.length)].n)}</div>`},80)};
+
+/* ---------- giao diện sáng/tối ---------- */
+function setTheme(m,keep){document.documentElement.dataset.theme=m;document.querySelectorAll("[data-th]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.th===m));if(keep)try{localStorage.setItem("fm_theme",m)}catch(e){}if(typeof setTiles==="function"&&$("mapbox"))setTiles()}
+let _th=null;try{_th=localStorage.getItem("fm_theme")}catch(e){}
+setTheme(_th||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"));
+initMap();i18n();initCtx();
+
+</script>
+</body>
+</html>
